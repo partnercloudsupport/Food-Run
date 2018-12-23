@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "244260083959",
+    "firebase_url": "https://food-run-3f415.firebaseio.com",
+    "project_id": "food-run-3f415",
+    "storage_bucket": "food-run-3f415.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244260083959:android:a0869fdb4b336d6e",
+        "android_client_info": {
+          "package_name": "com.ashcorps.foodrunrebloc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "244260083959-2fpr2rj3irnl78nqds0atapgabk2oef4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGwKk8u92VLeGh1JoTOmW-mlX3PXtp3wk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
