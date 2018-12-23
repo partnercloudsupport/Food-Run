@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/OrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Screen/AddEditResturantScreen.dart';
 import 'package:food_run_rebloc/Screen/OrdersListScreen.dart';
@@ -8,7 +9,8 @@ import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
 
 class ResturantsListScreen extends StatelessWidget {
   final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
-  ResturantsListScreen(this.resturantsAndOrdersBloc);
+  final Group group;
+  ResturantsListScreen({this.resturantsAndOrdersBloc, this.group});
 
   @override
   Widget build(BuildContext context) {

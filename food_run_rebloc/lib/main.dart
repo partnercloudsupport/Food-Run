@@ -3,11 +3,11 @@ import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
+import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
 import 'Bloc/OrdersBloc.dart';
 
 void main() {
-  final resturantAndOrdersBloc = ResturantsAndOrdersBloc();
-  runApp(MyApp(resturantAndOrdersBloc));
+  runApp(MyApp());
 }
 
 class AppState {
@@ -17,8 +17,7 @@ class AppState {
 }
 
 class MyApp extends StatelessWidget {
-  final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
-  MyApp(this.resturantsAndOrdersBloc);
+  MyApp();
 
   // This widget is the root of your application.
   @override
@@ -28,17 +27,20 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: ListPage(resturantsAndOrdersBloc));
+        home: ListPage());
   }
 }
 
 class ListPage extends StatelessWidget {
-  final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
-  ListPage(this.resturantsAndOrdersBloc);
+  ListPage();
 
   @override
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
-    return new ResturantsListScreen(resturantsAndOrdersBloc);
+    //return new ResturantsListScreen(resturantsAndOrdersBloc);
+    return RaisedButton(
+      child: Text("Hello"),
+      onPressed: () => showSearch(context: context, delegate: GroupSearch()),
+    );
   }
 }

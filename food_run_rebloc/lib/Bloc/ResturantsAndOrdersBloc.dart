@@ -1,16 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/FoodRunBlocInterface.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 
 class ResturantsAndOrdersBloc {
   static final String resturantsCollectionRefrence = "Resturants";
-  Stream<List<Resturant>> get resturants => getResturantsFromFirestore();
   static final String ordersCollectionRefrence = "Orders";
+  Stream<List<Resturant>> get resturants => getResturantsFromFirestore();
   //Stream<List<Order>> get orders => getOrdersFromFirestore();
+  Group group;
+  ResturantsAndOrdersBloc(this.group);
 
   void addResturantToFirestore(Resturant resturant) {
     Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
         .collection(resturantsCollectionRefrence)
         .add(Resturant.toMap(resturant))
         .then((_) => print("Resturant: ${resturant.name} Added"))
@@ -21,6 +26,8 @@ class ResturantsAndOrdersBloc {
   void deleteResturantToFirestore(Resturant resturant) {
     Firestore.instance
         .collection(resturantsCollectionRefrence)
+        .document(group.id)
+        .collection(resturantsCollectionRefrence)
         .document(resturant.id)
         .delete()
         .then((_) => print("Resturant: ${resturant.name} Deleted"))
@@ -30,6 +37,8 @@ class ResturantsAndOrdersBloc {
 
   void updateResturantToFirestore(Resturant resturant) {
     Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
         .collection(resturantsCollectionRefrence)
         .document(resturant.id)
         .updateData(Resturant.toMap(resturant))
@@ -42,6 +51,8 @@ class ResturantsAndOrdersBloc {
   //AsyncSnapshot -> List<Resturant>
   Stream<List<Resturant>> getResturantsFromFirestore() {
     Stream<List<Resturant>> resturantStream = Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
         .collection(resturantsCollectionRefrence)
         .snapshots()
         .asyncMap((snapshot) => snapshot.documents.map((docSnapshot) {
