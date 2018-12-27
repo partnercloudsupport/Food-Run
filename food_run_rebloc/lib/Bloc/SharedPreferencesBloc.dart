@@ -35,12 +35,12 @@ class SharedPreferencesBloc {
   Future saveUser(User user) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setString("id", user.id);
-    sharedPreferences.setString("id", user.name);
-    sharedPreferences.setBool("id", user.isVolunteer);
-    sharedPreferences.setBool("id", user.isAdmin);
-    sharedPreferences.setString("id", user.email);
-    sharedPreferences.setString("id", user.password);
-    sharedPreferences.setStringList("id", user.groupIds);
+    sharedPreferences.setString("name", user.name);
+    sharedPreferences.setBool("isVolunteer", user.isVolunteer);
+    sharedPreferences.setBool("isAdmin", user.isAdmin);
+    sharedPreferences.setString("email", user.email);
+    sharedPreferences.setString("password", user.password);
+    sharedPreferences.setStringList("groupIds", user.groupIds);
     print("Saved user to preference");
   }
 }

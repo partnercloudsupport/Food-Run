@@ -25,13 +25,14 @@ class HomeScreen extends StatelessWidget {
                 children: <Widget>[
                   RaisedButton(
                     child: Text("Sign In"),
-                    onPressed: () => Navigator.push(
+                    onPressed: () => Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
                             builder: (context) => SignInSignUpScreen(
                                 isSignIn: true,
                                 usersBloc: usersBloc,
-                                sharedPreferencesBloc: sharedPreferencesBloc))),
+                                sharedPreferencesBloc: sharedPreferencesBloc)),
+                        (_) => false),
                   ),
                   RaisedButton(
                     child: Text("Sign Up"),

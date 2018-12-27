@@ -33,33 +33,52 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class ListPage extends StatelessWidget {
+class ListPage extends StatefulWidget {
   SharedPreferencesBloc sharedPreferencesBloc;
   ListPage() {
     sharedPreferencesBloc = SharedPreferencesBloc();
   }
 
   @override
+  ListPageState createState() {
+    return new ListPageState(sharedPreferencesBloc);
+  }
+}
+
+class ListPageState extends State<ListPage> {
+  bool _isLoggedIn = null;
+
+  ListPageState(SharedPreferencesBloc sharedPreferencesBloc) {
+    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) => setState(() {
+          _isLoggedIn = isLoggedIn;
+        }));
+  }
+
+  @override
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) {
-      if (isLoggedIn) {
-        return GroupsListScreen(
-          user: sharedPreferencesBloc.user,
+    if (_isLoggedIn == null) {
+      return _buildLoadingScreen();
+    } else if (_isLoggedIn == true) {
+      return GroupsListScreen(
+        user: widget.sharedPreferencesBloc.user,
+        usersBloc: UsersBloc(),
+        groupsBloc: GroupsBloc(user: widget.sharedPreferencesBloc.user),
+      );
+    } else {
+      return HomeScreen(
           usersBloc: UsersBloc(),
-          groupsBloc: GroupsBloc(),
-        );
-      } else {
-        return HomeScreen(
-            usersBloc: UsersBloc(),
-            sharedPreferencesBloc: sharedPreferencesBloc);
-      }
-    });
+          sharedPreferencesBloc: widget.sharedPreferencesBloc);
+    }
+  }
 
-//    return RaisedButton(
-//      child: Text("Hello"),
-//      onPressed: () => showSearch(context: context, delegate: GroupSearch()),
-//    );
+  Widget _buildLoadingScreen() {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Food Run"),
+      ),
+      body: CircularProgressIndicator(),
+    );
   }
 }

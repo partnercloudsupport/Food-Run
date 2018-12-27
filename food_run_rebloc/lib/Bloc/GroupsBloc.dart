@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/User.dart';
+import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 class GroupsBloc {
@@ -19,7 +20,7 @@ class GroupsBloc {
   User user;
 
   Stream<List<Group>> get usersGroups => _getUsersGroups(user.groupIds);
-  GroupsBloc({this.user});
+  GroupsBloc({@required this.user});
 
   Stream<List<Group>> getResults(String searchInput) {
     return _groups.map((groups) {
