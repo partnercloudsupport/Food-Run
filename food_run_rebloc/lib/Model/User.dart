@@ -5,8 +5,18 @@ class User {
   String name;
   bool isAdmin;
   bool isVolunteer;
-
-  User({this.id, this.name, this.isVolunteer: false, this.isAdmin: false});
+  String email;
+  String password;
+  List<String> groupIds;
+  User({
+    this.id,
+    this.name,
+    this.isVolunteer: false,
+    this.isAdmin: false,
+    this.email,
+    this.password,
+    this.groupIds,
+  });
   @override
   bool operator ==(other) {
     if (other is User) {
@@ -19,11 +29,11 @@ class User {
 
   static User fromDocument(DocumentSnapshot documentSnap) {
     return new User(
-      id: documentSnap.documentID,
-      name: documentSnap["name"],
-      isVolunteer: documentSnap["isVolunteer"] ?? false,
-      isAdmin: documentSnap["isAdmin"] ?? false,
-    );
+        id: documentSnap.documentID,
+        name: documentSnap["name"],
+        isVolunteer: documentSnap["isVolunteer"] ?? false,
+        isAdmin: documentSnap["isAdmin"] ?? false,
+        groupIds: List.from(documentSnap["groupIds"]));
   }
 
   static Map<String, dynamic> toMap(User user) {
@@ -31,6 +41,7 @@ class User {
       "name": user.name,
       "isVolunteer": user.isVolunteer ?? false,
       "isAdmin": user.isAdmin ?? false,
+      "groupIds": user.groupIds
     };
   }
 
@@ -38,6 +49,7 @@ class User {
     return User(
         name: map["name"],
         isVolunteer: map["isVolunteer"] ?? false,
-        isAdmin: map["isAdmin"] ?? false);
+        isAdmin: map["isAdmin"] ?? false,
+        groupIds: map["groupIds"]);
   }
 }

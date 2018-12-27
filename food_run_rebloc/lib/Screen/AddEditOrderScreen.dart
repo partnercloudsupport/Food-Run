@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
+import 'package:food_run_rebloc/Model/User.dart';
 
 class AddEditOrderScreen extends StatefulWidget {
   final bool isEdit;
@@ -9,13 +10,15 @@ class AddEditOrderScreen extends StatefulWidget {
   final Function(Order, Resturant) onDelete;
   final Function(Order, Resturant) onEdit;
   final Resturant resturant;
+  final User user;
   AddEditOrderScreen(
       {@required this.isEdit,
       this.existingOrder,
       this.onAdd,
       this.onDelete,
       this.onEdit,
-      this.resturant});
+      this.resturant,
+      this.user});
 
   @override
   AddEditOrderScreenState createState() {
@@ -48,6 +51,7 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
                     widget.onEdit(_order, widget.resturant);
                   }
                 } else {
+                  _order.user = widget.user;
                   widget.onAdd(_order, widget.resturant);
                 }
                 Navigator.pop(context);

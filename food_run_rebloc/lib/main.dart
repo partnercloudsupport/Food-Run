@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
+import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
+import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
+import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/User.dart';
-import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
-import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
-import 'Bloc/OrdersBloc.dart';
+import 'package:food_run_rebloc/Screen/GroupsListScreen.dart';
+import 'package:food_run_rebloc/Screen/HomeScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -32,15 +34,32 @@ class MyApp extends StatelessWidget {
 }
 
 class ListPage extends StatelessWidget {
-  ListPage();
+  SharedPreferencesBloc sharedPreferencesBloc;
+  ListPage() {
+    sharedPreferencesBloc = SharedPreferencesBloc();
+  }
 
   @override
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    return RaisedButton(
-      child: Text("Hello"),
-      onPressed: () => showSearch(context: context, delegate: GroupSearch()),
-    );
+    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) {
+      if (isLoggedIn) {
+        return GroupsListScreen(
+          user: sharedPreferencesBloc.user,
+          usersBloc: UsersBloc(),
+          groupsBloc: GroupsBloc(),
+        );
+      } else {
+        return HomeScreen(
+            usersBloc: UsersBloc(),
+            sharedPreferencesBloc: sharedPreferencesBloc);
+      }
+    });
+
+//    return RaisedButton(
+//      child: Text("Hello"),
+//      onPressed: () => showSearch(context: context, delegate: GroupSearch()),
+//    );
   }
 }

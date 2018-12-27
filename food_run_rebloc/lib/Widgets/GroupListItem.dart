@@ -9,7 +9,19 @@ class GroupListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: new Text(group.name),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              group.name,
+              style: TextStyle(fontSize: 28.0),
+            ),
+          ),
+          Divider(),
+        ],
+      ),
       onTap: onTap,
     );
   }

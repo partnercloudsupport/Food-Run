@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
+import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 
 class GroupSearch extends SearchDelegate<Group> {
   GroupsBloc groupsBloc;
 
-  GroupSearch() {
-    groupsBloc = GroupsBloc();
-  }
+  TextEditingController _passwordController = new TextEditingController();
+  UsersBloc usersBloc;
+  User user;
+  GroupSearch(
+      {@required this.groupsBloc,
+      @required this.usersBloc,
+      @required this.user});
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -43,8 +50,7 @@ class GroupSearch extends SearchDelegate<Group> {
                   children: groupsSnap.data
                       .map((group) => GroupListItem(
                           group: group,
-                          onTap: () => _onGroupListItemTapped(context, group,
-                              new ResturantsAndOrdersBloc(group))))
+                          onTap: () => _groupDialog(context, group)))
                       .toList(),
                 )
               : Container();
@@ -57,7 +63,63 @@ class GroupSearch extends SearchDelegate<Group> {
         context,
         new MaterialPageRoute(
             builder: (context) => ResturantsListScreen(
+                user: user,
                 group: group,
                 resturantsAndOrdersBloc: resturantsAndOrdersBloc)));
+  }
+
+  _groupDialog(BuildContext context, Group group) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text("Enter the Group's Password"),
+              content: new Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(hintText: "Group Password"),
+                    validator: (attempt) {
+                      if (attempt == null || attempt == "") {
+                        return "Return must enter text";
+                      }
+                      return null;
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: () {
+                          bool isCorrect = groupsBloc.isCorrectGroupPassword(
+                              _passwordController.text.toString(), group);
+                          if (isCorrect) {
+                            if (usersBloc.isMember(user, group)) {
+                              Fluttertoast.showToast(
+                                  msg: "Already a member of ${group.name}");
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: "Welcome to ${group.name}");
+                              usersBloc.addGroupToUser(user, group);
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: "Wrong Password");
+                          }
+                        },
+                        child: Text("Ok"),
+                      ),
+                      RaisedButton(
+                        onPressed: () {
+                          Fluttertoast.showToast(msg: "Wrong Password");
+                          close(context, null);
+                        },
+                        child: Text("Cancel"),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ));
   }
 }

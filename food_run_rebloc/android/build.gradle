@@ -21,8 +21,24 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
+/*
+ Adding this to solve
+ 'com.android.support:appcompat-v7' has different version for the compile (26.1.0) and runtime (27.0.1) classpath
+ */
 subprojects {
     project.evaluationDependsOn(':app')
+
+    project.configurations.all {
+
+        resolutionStrategy.eachDependency { details ->
+
+            if (details.requested.group == 'com.android.support'
+                    && !details.requested.name.contains('multidex') ) {
+                details.useVersion "26.1.0"
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:food_run_rebloc/Bloc/OrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
+import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditResturantScreen.dart';
 import 'package:food_run_rebloc/Screen/OrdersListScreen.dart';
 import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
@@ -10,7 +10,11 @@ import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
 class ResturantsListScreen extends StatelessWidget {
   final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
   final Group group;
-  ResturantsListScreen({this.resturantsAndOrdersBloc, this.group});
+  final User user;
+  ResturantsListScreen(
+      {@required this.resturantsAndOrdersBloc,
+      @required this.group,
+      @required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +38,7 @@ class ResturantsListScreen extends StatelessWidget {
                     .toList(),
               );
             }
-            return Container();
+            return Text("Add A Resturant");
           }),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
@@ -55,8 +59,8 @@ class ResturantsListScreen extends StatelessWidget {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                new OrdersListScreen(resturantsAndOrdersBloc, resturant)));
+            builder: (context) => new OrdersListScreen(
+                resturantsAndOrdersBloc, resturant, user)));
   }
 
   _onResturantListItemLongPress(BuildContext context, Resturant resturant) {
