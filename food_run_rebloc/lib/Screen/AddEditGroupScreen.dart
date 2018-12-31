@@ -119,7 +119,8 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                   }
                   return null;
                 },
-                onSaved: (groupName) => this._group.name = groupName,
+                onSaved: (groupPassword) =>
+                    this._group.password = groupPassword,
                 decoration: InputDecoration(hintText: "Confirm group password"),
               )
       ],
@@ -155,7 +156,7 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                   return null;
                 },
                 onSaved: (confirmAdminPassword) =>
-                    this._group.name = confirmAdminPassword,
+                    this._group.adminPassword = confirmAdminPassword,
                 decoration: InputDecoration(hintText: "Confirm admin password"),
               )
       ],

@@ -33,10 +33,13 @@ class OrdersBloc {
   Future<Null> addOrderToFirestore(Order orderToAdd) async {
     CollectionReference collectionReference =
         Firestore.instance.collection(ordersCollectionRefrence);
-    await collectionReference
-        .add(Order.toMap(orderToAdd))
-        .then((_) => print("Order Added"))
-        .catchError((_) => print("Order being added failed"));
+    await collectionReference.add(Order.toMap(orderToAdd)).then((_) {
+      print("Order Added");
+      return;
+    }).catchError((_) {
+      print("Order being added failed");
+      return;
+    });
   }
 
   Future<Null> deleteOrderToFirestore(Order orderToDelete) {
@@ -44,8 +47,13 @@ class OrdersBloc {
         .collection(ordersCollectionRefrence)
         .document(orderToDelete.id)
         .delete()
-        .then((_) => print("${orderToDelete.order} by ADD_USER_HERE deleted"))
-        .catchError((_) => print("Order failed to delete"));
+        .then((_) {
+      print("${orderToDelete.order} by ADD_USER_HERE deleted");
+      return;
+    }).catchError((_) {
+      print("Order failed to delete");
+      return;
+    });
   }
 
   void updateOrderToFirestore(Order orderToEdit) {

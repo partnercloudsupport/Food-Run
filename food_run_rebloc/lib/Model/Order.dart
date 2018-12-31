@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/src/material/time.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 
 class Order {
@@ -16,10 +17,15 @@ class Order {
   }
 
   //returns true if admin or if the sameUser
-  bool isEditable(User currentSignInUser) {
-    if (this.user == currentSignInUser || (this.user.isAdmin ?? false)) {
+  bool isEditable(User currentSignInUser, Group group) {
+    if (this.user == currentSignInUser) {
       return true;
     }
+    currentSignInUser.adminForGroups.forEach((groupId) {
+      if (group.id == groupId) {
+        return true;
+      }
+    });
     return false;
   }
 

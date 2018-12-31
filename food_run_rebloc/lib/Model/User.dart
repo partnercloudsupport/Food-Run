@@ -1,18 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
 
 class User {
   String id;
   String name;
-  bool isAdmin;
-  bool isVolunteer;
   String email;
   String password;
+  List<String> adminForGroups;
   List<String> groupIds;
+  List<String> volunteeredGroups;
   User({
     this.id,
     this.name,
-    this.isVolunteer: false,
-    this.isAdmin: false,
+    this.volunteeredGroups,
+    this.adminForGroups,
     this.email,
     this.password,
     this.groupIds,
@@ -21,8 +22,8 @@ class User {
   bool operator ==(other) {
     if (other is User) {
       return this.name == other.name &&
-          this.isVolunteer == other.isVolunteer &&
-          this.isAdmin == other.isAdmin;
+          //this.isVolunteer == other.isVolunteer &&
+          this.id == other.id;
     }
     return false;
   }
@@ -31,25 +32,50 @@ class User {
     return new User(
         id: documentSnap.documentID,
         name: documentSnap["name"],
-        isVolunteer: documentSnap["isVolunteer"] ?? false,
-        isAdmin: documentSnap["isAdmin"] ?? false,
+        volunteeredGroups: List.from(documentSnap["volunteeredGroups"]),
+        adminForGroups: List.from(documentSnap["adminForGroups"]),
+        email: documentSnap["email"],
+        password: documentSnap["password"],
         groupIds: List.from(documentSnap["groupIds"]));
   }
 
   static Map<String, dynamic> toMap(User user) {
-    return <String, dynamic>{
+    Map<String, dynamic> map = <String, dynamic>{
+      "id": user.id,
       "name": user.name,
-      "isVolunteer": user.isVolunteer ?? false,
-      "isAdmin": user.isAdmin ?? false,
+      "email": user.email,
+      "password": user.password,
+      "volunteeredGroups": user.volunteeredGroups,
+      "adminForGroups": user.adminForGroups,
       "groupIds": user.groupIds
     };
+    return map;
   }
 
   static User fromMap(Map map) {
-    return User(
+    User user = User(
+        id: map["id"],
         name: map["name"],
-        isVolunteer: map["isVolunteer"] ?? false,
-        isAdmin: map["isAdmin"] ?? false,
-        groupIds: map["groupIds"]);
+        email: map["email"],
+        password: map["password"],
+        volunteeredGroups: List.from(map["volunteeredGroups"]),
+        adminForGroups: List.from(map["adminForGroups"]),
+        groupIds: List.from(map["groupIds"]));
+    return user;
+  }
+
+  bool isAdmin(Group group) {
+    bool isAdmin = false;
+    this.adminForGroups.forEach((groupId) {
+      print(groupId);
+      if (groupId == group.id) {
+        print("user is admin");
+        isAdmin = true;
+      }
+    });
+    if (!isAdmin) {
+      print("user is NOT admin");
+    }
+    return isAdmin;
   }
 }

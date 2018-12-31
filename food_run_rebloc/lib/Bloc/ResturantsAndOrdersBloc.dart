@@ -2,14 +2,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
+import 'package:food_run_rebloc/Model/User.dart';
 
 class ResturantsAndOrdersBloc {
   static final String resturantsCollectionRefrence = "Resturants";
   static final String ordersCollectionRefrence = "Orders";
+
   Stream<List<Resturant>> get resturants => getResturantsFromFirestore();
+  List<Resturant> _resturants;
+  List<Order> _orders;
   //Stream<List<Order>> get orders => getOrdersFromFirestore();
   Group group;
-  ResturantsAndOrdersBloc(this.group);
+  static ResturantsAndOrdersBloc _resturantsAndOrdersBlocInstance;
+
+//  factory ResturantsAndOrdersBloc(Group group) {
+//    this.group = group;
+//    return _resturantsAndOrdersBlocInstance;
+//  }
+  factory ResturantsAndOrdersBloc(Group group) {
+    if (_resturantsAndOrdersBlocInstance == null) {
+      _resturantsAndOrdersBlocInstance =
+          ResturantsAndOrdersBloc._internal(group);
+    }
+    return _resturantsAndOrdersBlocInstance;
+  }
+
+  ResturantsAndOrdersBloc._internal(this.group);
 
   void addResturantToFirestore(Resturant resturant) {
     Firestore.instance
@@ -54,9 +72,13 @@ class ResturantsAndOrdersBloc {
         .document(group.id)
         .collection(resturantsCollectionRefrence)
         .snapshots()
-        .asyncMap((snapshot) => snapshot.documents.map((docSnapshot) {
-              return Resturant.fromDocument(docSnapshot);
-            }).toList());
+        .asyncMap((snapshot) {
+      print("Got resturants for ${group.name}");
+      _resturants = snapshot.documents.map((docSnapshot) {
+        return Resturant.fromDocument(docSnapshot);
+      }).toList();
+      return _resturants;
+    });
     return resturantStream;
   }
 
@@ -65,6 +87,7 @@ class ResturantsAndOrdersBloc {
 
   Future<Null> addOrderToFirestore(
       Order orderToAdd, Resturant resturant) async {
+    orderToAdd.resturantId = resturant.id;
     CollectionReference collectionReference = Firestore.instance
         .collection(ordersCollectionRefrence)
         .document(resturant.id)
@@ -72,7 +95,11 @@ class ResturantsAndOrdersBloc {
     await collectionReference.add(Order.toMap(orderToAdd)).then((_) {
       print("Order Added");
       _incrementResturantToFirestore(resturant);
-    }).catchError((_) => print("Order being added failed"));
+      return;
+    }).catchError((_) {
+      print("Order being added failed");
+      return;
+    });
   }
 
   Future<Null> deleteOrderToFirestore(
@@ -86,7 +113,11 @@ class ResturantsAndOrdersBloc {
         .then((_) {
       print("${orderToDelete.order} by ADD_USER_HERE deleted");
       _decrementResturantToFirestore(resturant);
-    }).catchError((_) => print("Order failed to delete"));
+      return;
+    }).catchError((_) {
+      print("Order failed to delete");
+      return;
+    });
   }
 
   void updateOrderToFirestore(Order orderToEdit, Resturant resturant) {
@@ -111,9 +142,10 @@ class ResturantsAndOrdersBloc {
         .snapshots()
         .asyncMap((querySnapshot) {
       print("Looking at latest snapshot of orders list");
-      return querySnapshot.documents
+      _orders = querySnapshot.documents
           .map((docSnap) => Order.fromDocument(docSnap))
           .toList();
+      return _orders;
     });
     return ordersStream;
   }
@@ -122,8 +154,10 @@ class ResturantsAndOrdersBloc {
     resturant.numberOfOrders--;
     Firestore.instance
         .collection("Resturants")
+        .document(group.id)
+        .collection(resturantsCollectionRefrence)
         .document(resturant.id)
-        .updateData(Resturant.toMap(resturant))
+        .updateData({"numberOfOrders": resturant.numberOfOrders})
         .then((_) => print("Resturant: ${resturant.name} deleted an order"))
         .catchError((_) => print(
             "Resturant: ${resturant.name} failed to decrement order number"));
@@ -132,11 +166,59 @@ class ResturantsAndOrdersBloc {
   void _incrementResturantToFirestore(Resturant resturant) {
     resturant.numberOfOrders++;
     Firestore.instance
-        .collection("Resturants")
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
+        .collection(resturantsCollectionRefrence)
         .document(resturant.id)
-        .updateData(Resturant.toMap(resturant))
+        .updateData({"numberOfOrders": resturant.numberOfOrders})
         .then((_) => print("Resturant: ${resturant.name} added an order"))
         .catchError((_) => print(
             "Resturant: ${resturant.name} failed to increment order number"));
+  }
+
+  void updateOrdersForGroup(Resturant resturant, User signedInUser) {
+    List<Order> changedOrders = _orders.where((order) {
+      if (order.user.id == signedInUser.id) {
+        return true;
+      }
+      return false;
+    }).toList();
+
+    WriteBatch writeBatch = Firestore.instance.batch();
+
+    //Go to each changed order id and swap user
+    changedOrders.forEach((order) {
+      DocumentReference documentReference = Firestore.instance
+          .collection(ordersCollectionRefrence)
+          .document(resturant.id)
+          .collection(ordersCollectionRefrence)
+          .document(order.id);
+      order.user = signedInUser;
+      writeBatch.updateData(documentReference, Order.toMap(order));
+    });
+
+    writeBatch.commit().then((_) {
+      print("Writebatch successfull updated volunteer user");
+    }).catchError((error) => print(error));
+  }
+
+  void deleteResturantsAndOrders(Group group) {
+    WriteBatch writeBatch = Firestore.instance.batch();
+    group.resturantIds.forEach((resturantId) {
+      DocumentReference documentReference = Firestore.instance
+          .collection(ordersCollectionRefrence)
+          .document(resturantId);
+      writeBatch.delete(documentReference);
+    });
+
+    group.resturantIds.forEach((resturantId) {
+      DocumentReference documentReference = Firestore.instance
+          .collection(resturantsCollectionRefrence)
+          .document(group.id);
+      writeBatch.delete(documentReference);
+    });
+    writeBatch.commit().then((_) {
+      print("Deleted orders and resturants");
+    }).catchError((error) => print(error));
   }
 }

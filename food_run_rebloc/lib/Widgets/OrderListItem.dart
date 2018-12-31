@@ -1,11 +1,14 @@
+import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
+import 'package:food_run_rebloc/Model/FlareData.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 
 class OrderListItem extends StatelessWidget {
   final Order order;
   final Function onTap;
   final Function onLongPress;
-  OrderListItem({this.order, this.onTap, this.onLongPress});
+  final bool isVolunteer;
+  OrderListItem({this.order, this.onTap, this.onLongPress, this.isVolunteer});
 
   @override
   Widget build(BuildContext context) {
@@ -14,14 +17,21 @@ class OrderListItem extends StatelessWidget {
         ListTile(
           title: Text(
             order.order,
-            style: TextStyle(fontSize: 20.0),
+            style: TextStyle(
+              fontSize: 20.0,
+            ),
           ),
           trailing: new Column(
             children: <Widget>[
-              order.user.isVolunteer
-                  ? new Icon(
-                      Icons.directions_run,
-                      size: 40.0,
+              isVolunteer
+                  ? SizedBox(
+                      width: 50.0,
+                      height: 55.0,
+                      child: FlareActor(
+                        FlareData.runningMan.filename,
+                        fit: BoxFit.fitHeight,
+                        animation: FlareData.runningMan.animation,
+                      ),
                     )
                   : new Icon(
                       Icons.fastfood,

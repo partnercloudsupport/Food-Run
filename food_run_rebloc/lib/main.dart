@@ -6,7 +6,6 @@ import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/GroupsListScreen.dart';
 import 'package:food_run_rebloc/Screen/HomeScreen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,19 +24,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: ListPage());
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      routes: {
+        "/": (context) => ListPage(),
+      },
+    );
   }
 }
 
 class ListPage extends StatefulWidget {
-  SharedPreferencesBloc sharedPreferencesBloc;
-  ListPage() {
-    sharedPreferencesBloc = SharedPreferencesBloc();
-  }
+  final SharedPreferencesBloc sharedPreferencesBloc = SharedPreferencesBloc();
+  ListPage();
 
   @override
   ListPageState createState() {
@@ -46,29 +46,45 @@ class ListPage extends StatefulWidget {
 }
 
 class ListPageState extends State<ListPage> {
-  bool _isLoggedIn = null;
+  bool _isLoggedIn;
+  UsersBloc _usersBloc;
+  User _user;
 
   ListPageState(SharedPreferencesBloc sharedPreferencesBloc) {
-    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) => setState(() {
-          _isLoggedIn = isLoggedIn;
-        }));
+    _usersBloc = UsersBloc();
+    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) {
+      if (isLoggedIn) {
+        _usersBloc.getUser(sharedPreferencesBloc.user.id).then((user) {
+          setState(() {
+            _user = user;
+          });
+        });
+      } else {
+        setState(() {
+          _user = new User();
+        });
+      }
+      setState(() {
+        _isLoggedIn = isLoggedIn;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    if (_isLoggedIn == null) {
+    if (_isLoggedIn == null || _user == null) {
       return _buildLoadingScreen();
     } else if (_isLoggedIn == true) {
+      print("Using groupsBloc in main");
       return GroupsListScreen(
-        user: widget.sharedPreferencesBloc.user,
-        usersBloc: UsersBloc(),
-        groupsBloc: GroupsBloc(user: widget.sharedPreferencesBloc.user),
+        usersBloc: _usersBloc,
+        groupsBloc: GroupsBloc(user: _usersBloc.signedInUser),
       );
     } else {
       return HomeScreen(
-          usersBloc: UsersBloc(),
+          usersBloc: _usersBloc,
           sharedPreferencesBloc: widget.sharedPreferencesBloc);
     }
   }

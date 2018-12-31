@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
+import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/User.dart';
@@ -10,14 +11,15 @@ import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 
 class GroupSearch extends SearchDelegate<Group> {
   GroupsBloc groupsBloc;
-
   TextEditingController _passwordController = new TextEditingController();
   UsersBloc usersBloc;
   User user;
-  GroupSearch(
-      {@required this.groupsBloc,
-      @required this.usersBloc,
-      @required this.user});
+  GroupSearch({
+    @required this.groupsBloc,
+    @required this.usersBloc,
+  }) {
+    user = usersBloc.signedInUser;
+  }
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -63,7 +65,8 @@ class GroupSearch extends SearchDelegate<Group> {
         context,
         new MaterialPageRoute(
             builder: (context) => ResturantsListScreen(
-                user: user,
+                usersBloc: usersBloc,
+                sharedPreferencesBloc: SharedPreferencesBloc(),
                 group: group,
                 resturantsAndOrdersBloc: resturantsAndOrdersBloc)));
   }
@@ -103,6 +106,7 @@ class GroupSearch extends SearchDelegate<Group> {
                                   msg: "Welcome to ${group.name}");
                               usersBloc.addGroupToUser(user, group);
                             }
+                            close(context, null);
                           } else {
                             Fluttertoast.showToast(msg: "Wrong Password");
                           }
@@ -111,7 +115,6 @@ class GroupSearch extends SearchDelegate<Group> {
                       ),
                       RaisedButton(
                         onPressed: () {
-                          Fluttertoast.showToast(msg: "Wrong Password");
                           close(context, null);
                         },
                         child: Text("Cancel"),

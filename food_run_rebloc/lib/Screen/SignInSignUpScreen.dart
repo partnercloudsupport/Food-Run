@@ -67,7 +67,6 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
                             MaterialPageRoute(
                                 builder: (context) => GroupsListScreen(
                                     usersBloc: UsersBloc(),
-                                    user: firebaseAuthData.user,
                                     groupsBloc: GroupsBloc(
                                         user: firebaseAuthData.user))));
                       }

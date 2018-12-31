@@ -6,7 +6,6 @@ import 'package:rxdart/rxdart.dart';
 
 class GroupsBloc {
   static final String groupsCollectionRefrence = "Groups";
-  ReplaySubject<String> _searchInput = ReplaySubject<String>();
   Stream<List<Group>> _groups = Firestore.instance
       .collection(groupsCollectionRefrence)
       .snapshots()
@@ -18,9 +17,10 @@ class GroupsBloc {
   }).handleError((_) => print("Unable to load the groups"));
 
   User user;
-
-  Stream<List<Group>> get usersGroups => _getUsersGroups(user.groupIds);
-  GroupsBloc({@required this.user});
+  PublishSubject<User> userStream = PublishSubject<User>();
+  GroupsBloc({@required this.user}) {
+    userStream.add(user);
+  }
 
   Stream<List<Group>> getResults(String searchInput) {
     return _groups.map((groups) {
@@ -31,12 +31,17 @@ class GroupsBloc {
   }
 
   Stream<List<Group>> _getUsersGroups(List<String> usersGroupsId) {
-    if (usersGroupsId == null) {
-      print("usersGroupsId is null");
-      return null;
-    }
     List<Group> groups = [];
     ReplaySubject<List<Group>> replaySubject = ReplaySubject<List<Group>>();
+
+    if (usersGroupsId == null) {
+      print("usersGroupsId is null");
+      return Stream.empty();
+    } else if (usersGroupsId.length == 0) {
+      print("usersGroupsId is empty");
+      replaySubject.add([]);
+      return replaySubject.stream;
+    }
     usersGroupsId.forEach((groupId) {
       Firestore.instance
           .collection(groupsCollectionRefrence)
@@ -67,9 +72,8 @@ class GroupsBloc {
         .collection(groupsCollectionRefrence)
         .where("name", isEqualTo: group.name)
         .getDocuments()
-        .then((_) {
-      print("Got query of groups with name ${group.name}");
-    }).catchError((error) => print(error));
+        .catchError((error) => print(error));
+    print("Successfully completed query for ${group.name}");
 
     if (querySnapshot == null) {
       await _addNewGroup(group);
@@ -93,5 +97,36 @@ class GroupsBloc {
 
   bool isCorrectGroupPassword(String attempt, Group group) {
     return attempt == group.password;
+  }
+
+  void updateAdminSettings(Group group) {
+    Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .document(group.id)
+        .updateData({
+      "canAddOrders": group.canAddOrders,
+      "canRemoveOrders": group.canRemoveOrders,
+      "canAddResturants": group.canAddResturants,
+      "canRemoveResturants": group.canRemoveResturants,
+    }).then((_) {
+      print("Updated admin settings");
+    }).catchError((error) => print(error));
+  }
+
+  //Do you need to wipe subsets?
+  void deleteGroup(Group group) {
+    Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .document(group.id)
+        .delete()
+        .then((_) {
+      print("Group deleted");
+    }).catchError((error) {
+      print(error);
+    });
+  }
+
+  Stream<List<Group>> getUsersGroups(User signedInUser) {
+    return _getUsersGroups(signedInUser.groupIds);
   }
 }

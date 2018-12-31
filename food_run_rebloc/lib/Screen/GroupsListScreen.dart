@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
+import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/User.dart';
@@ -12,22 +13,33 @@ import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
 class GroupsListScreen extends StatelessWidget {
   final UsersBloc usersBloc;
   final GroupsBloc groupsBloc;
-  final User user;
-  GroupsListScreen(
-      {@required this.user,
-      @required this.usersBloc,
-      @required this.groupsBloc});
+  GroupsListScreen({@required this.usersBloc, @required this.groupsBloc});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Your Groups"),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                showSearch(
+                    context: context,
+                    delegate: GroupSearch(
+                      groupsBloc: groupsBloc,
+                      usersBloc: usersBloc,
+                    ));
+              })
+        ],
       ),
       body: StreamBuilder(
-          stream: groupsBloc.usersGroups,
+          stream: groupsBloc.getUsersGroups(usersBloc.signedInUser),
           builder: (context, AsyncSnapshot<List<Group>> asyncSnapshot) {
             if (asyncSnapshot.hasData) {
+              if (asyncSnapshot.data.length == 0) {
+                return Text("Add Resturants");
+              }
               return ListView(
                 children: asyncSnapshot.data
                     .map((group) => GroupListItem(
@@ -35,12 +47,18 @@ class GroupsListScreen extends StatelessWidget {
                           onTap: () => Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
                                 return ResturantsListScreen(
-                                  user: user,
+                                  usersBloc: usersBloc,
+                                  sharedPreferencesBloc:
+                                      SharedPreferencesBloc(),
                                   resturantsAndOrdersBloc:
                                       ResturantsAndOrdersBloc(group),
                                   group: group,
                                 );
-                              })),
+                              })).then((updatedUser) {
+                                if (updatedUser is User) {
+                                  groupsBloc.user = updatedUser;
+                                }
+                              }),
                         ))
                     .toList(),
               );
@@ -53,9 +71,9 @@ class GroupsListScreen extends StatelessWidget {
                     onPressed: () => showSearch(
                         context: context,
                         delegate: GroupSearch(
-                            usersBloc: usersBloc,
-                            groupsBloc: groupsBloc,
-                            user: user)),
+                          usersBloc: usersBloc,
+                          groupsBloc: groupsBloc,
+                        )),
                   ),
                 ],
               );

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SharedPreferencesBloc {
   User user;
 
-  SharedPreferencesBloc() {}
+  SharedPreferencesBloc();
 
   Future<bool> isUserLoggedIn() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -24,8 +24,8 @@ class SharedPreferencesBloc {
     return User(
       id: preferences.getString("id"),
       name: preferences.getString("name"),
-      isVolunteer: preferences.getBool("isVolunteer") ?? false,
-      isAdmin: preferences.getBool("isAdmin") ?? false,
+      volunteeredGroups: preferences.getStringList("volunteeredGroups"),
+      adminForGroups: preferences.getStringList("adminForGroups"),
       email: preferences.getString("email"),
       password: preferences.getString("password"),
       groupIds: preferences.getStringList("groupIds"),
@@ -36,11 +36,17 @@ class SharedPreferencesBloc {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setString("id", user.id);
     sharedPreferences.setString("name", user.name);
-    sharedPreferences.setBool("isVolunteer", user.isVolunteer);
-    sharedPreferences.setBool("isAdmin", user.isAdmin);
+    sharedPreferences.setStringList(
+        "volunteeredGroups", user.volunteeredGroups);
+    sharedPreferences.setStringList("adminForGroups", user.adminForGroups);
     sharedPreferences.setString("email", user.email);
     sharedPreferences.setString("password", user.password);
     sharedPreferences.setStringList("groupIds", user.groupIds);
     print("Saved user to preference");
+  }
+
+  Future signOut() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.clear();
   }
 }
