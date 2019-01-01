@@ -11,13 +11,17 @@ import 'package:rxdart/rxdart.dart';
 
 class UsersBloc {
   static final String usersCollectionRefrence = "Users";
-
-  StreamSubscription<DocumentSnapshot> signedInUserStream;
+  PublishSubject<User> _userStream = PublishSubject<User>();
+  Observable<User> get userStream => _userStream.stream;
   Stream<List<User>> get users => _getUsers();
   List<User> _users;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   User signedInUser;
+
+  UsersBloc() {
+    _getUsers();
+  }
 
   Future<FirebaseAuthData> sendEmailVerification(User user) async {
     FirebaseAuthData firebaseAuthData =
@@ -131,14 +135,16 @@ class UsersBloc {
         .collection(usersCollectionRefrence)
         .document(id)
         .get();
-    signedInUserStream = Firestore.instance
+    signedInUser = User.fromDocument(signinUserSnap);
+    Firestore.instance
         .collection(usersCollectionRefrence)
         .document(id)
         .snapshots()
-        .listen((userSnapshot) {
-      signedInUser = User.fromDocument(userSnapshot);
+        .asyncMap((doc) => User.fromDocument(doc))
+        .listen((user) {
+      signedInUser = user;
+      _userStream.add(signedInUser);
     });
-    signedInUser = User.fromDocument(signinUserSnap);
     return signedInUser;
   }
 

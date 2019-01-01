@@ -16,10 +16,12 @@ class ResturantsListScreen extends StatefulWidget {
   final Group group;
   User user;
   final SharedPreferencesBloc sharedPreferencesBloc;
+  final GroupsBloc groupsBloc;
   final UsersBloc usersBloc;
 
   ResturantsListScreen({
     @required this.usersBloc,
+    @required this.groupsBloc,
     @required this.resturantsAndOrdersBloc,
     @required this.sharedPreferencesBloc,
     @required this.group,
@@ -86,7 +88,12 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
               return AddEditResturantScreen(
                 isEdit: false,
-                onAdd: widget.resturantsAndOrdersBloc.addResturantToFirestore,
+                onAdd: (resturant) {
+                  widget.resturantsAndOrdersBloc
+                      .addResturantToFirestore(resturant, widget.group);
+                  widget.groupsBloc
+                      .addResturantToGroup(resturant, widget.group);
+                },
                 onEdit:
                     widget.resturantsAndOrdersBloc.updateResturantToFirestore,
                 onDelete:
@@ -112,7 +119,10 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
             builder: (context) => new AddEditResturantScreen(
                   isEdit: true,
                   existingResturant: resturant,
-                  onAdd: widget.resturantsAndOrdersBloc.addResturantToFirestore,
+                  onAdd: (resturant) {
+                    widget.resturantsAndOrdersBloc
+                        .addResturantToFirestore(resturant, widget.group);
+                  },
                   onEdit:
                       widget.resturantsAndOrdersBloc.updateResturantToFirestore,
                   onDelete:

@@ -29,15 +29,17 @@ class ResturantsAndOrdersBloc {
 
   ResturantsAndOrdersBloc._internal(this.group);
 
-  void addResturantToFirestore(Resturant resturant) {
-    Firestore.instance
-        .collection(resturantsCollectionRefrence)
-        .document(group.id)
-        .collection(resturantsCollectionRefrence)
-        .add(Resturant.toMap(resturant))
-        .then((_) => print("Resturant: ${resturant.name} Added"))
-        .catchError(
-            (_) => print("Resturant: ${resturant.name} being added failed"));
+  void addResturantToFirestore(Resturant resturant, Group group) {
+    if (!group.resturantIds.contains(resturant.id)) {
+      Firestore.instance
+          .collection(resturantsCollectionRefrence)
+          .document(group.id)
+          .collection(resturantsCollectionRefrence)
+          .add(Resturant.toMap(resturant))
+          .then((_) => print("Resturant: ${resturant.name} Added"))
+          .catchError(
+              (_) => print("Resturant: ${resturant.name} being added failed"));
+    }
   }
 
   void deleteResturantToFirestore(Resturant resturant) {
@@ -202,23 +204,74 @@ class ResturantsAndOrdersBloc {
     }).catchError((error) => print(error));
   }
 
-  void deleteResturantsAndOrders(Group group) {
-    WriteBatch writeBatch = Firestore.instance.batch();
-    group.resturantIds.forEach((resturantId) {
-      DocumentReference documentReference = Firestore.instance
+  Future deleteResturantsAndOrders(Group group) async {
+    group.resturantIds.forEach((resturantId) async {
+      WriteBatch writeBatch = Firestore.instance.batch();
+      QuerySnapshot querySnapshot = await Firestore.instance
           .collection(ordersCollectionRefrence)
-          .document(resturantId);
-      writeBatch.delete(documentReference);
+          .document(resturantId)
+          .collection(ordersCollectionRefrence)
+          .getDocuments();
+      querySnapshot.documents.forEach((documentSnap) {
+        writeBatch.delete(documentSnap.reference);
+      });
+
+      writeBatch.commit().then((_) {
+        print("Deleted orders");
+      }).catchError((error) => print(error));
+
+      Firestore.instance
+          .collection(ordersCollectionRefrence)
+          .document(resturantId)
+          .delete()
+          .then((_) {
+        print("Deleted order head");
+      }).catchError((error) => print(error));
     });
 
-    group.resturantIds.forEach((resturantId) {
-      DocumentReference documentReference = Firestore.instance
-          .collection(resturantsCollectionRefrence)
-          .document(group.id);
-      writeBatch.delete(documentReference);
+    WriteBatch resturantBatch = Firestore.instance.batch();
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
+        .collection(resturantsCollectionRefrence)
+        .getDocuments();
+
+    querySnapshot.documents.forEach((docSnap) {
+      resturantBatch.delete(docSnap.reference);
     });
-    writeBatch.commit().then((_) {
-      print("Deleted orders and resturants");
+
+    resturantBatch.commit().then((_) {
+      print("Deletedresturants");
     }).catchError((error) => print(error));
+
+    Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
+        .delete()
+        .then((_) {
+      print("Deleted resturant head");
+    }).catchError((error) => print(error));
+  }
+
+  Future ADDTESTORDERSANDRESTURANTS(Group group, User user) async {
+    Resturant resturant = Resturant(
+      name: "MCDONALD'S",
+      numberOfOrders: 1,
+    );
+    DocumentReference reference = await Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(group.id)
+        .collection(resturantsCollectionRefrence)
+        .add(Resturant.toMap(resturant));
+    print("RESTURANTS ID IS ${reference.documentID}");
+    Order order =
+        Order(order: "Burger", user: user, resturantId: reference.documentID);
+    Firestore.instance
+        .collection(ordersCollectionRefrence)
+        .document(reference.documentID)
+        .collection(ordersCollectionRefrence)
+        .add(Order.toMap(order));
+
+    group.resturantIds.add(reference.documentID);
   }
 }

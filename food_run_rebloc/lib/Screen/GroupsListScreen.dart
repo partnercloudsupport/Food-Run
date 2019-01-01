@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
@@ -9,11 +11,31 @@ import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
+import 'package:rxdart/rxdart.dart';
 
-class GroupsListScreen extends StatelessWidget {
+class GroupsListScreen extends StatefulWidget {
   final UsersBloc usersBloc;
   final GroupsBloc groupsBloc;
   GroupsListScreen({@required this.usersBloc, @required this.groupsBloc});
+
+  @override
+  State<StatefulWidget> createState() {
+    return GroupsListScreenState(usersBloc: usersBloc, groupsBloc: groupsBloc);
+  }
+}
+
+class GroupsListScreenState extends State<GroupsListScreen> {
+  GroupsBloc groupsBloc;
+  UsersBloc usersBloc;
+  User user = User();
+  GroupsListScreenState({this.usersBloc, this.groupsBloc}) {
+    user = usersBloc.signedInUser;
+    usersBloc.userStream.listen((user) {
+      setState(() {
+        this.user = user;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +56,7 @@ class GroupsListScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder(
-          stream: groupsBloc.getUsersGroups(usersBloc.signedInUser),
+          stream: groupsBloc.getUsersGroups(user),
           builder: (context, AsyncSnapshot<List<Group>> asyncSnapshot) {
             if (asyncSnapshot.hasData) {
               if (asyncSnapshot.data.length == 0) {
@@ -47,6 +69,7 @@ class GroupsListScreen extends StatelessWidget {
                           onTap: () => Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
                                 return ResturantsListScreen(
+                                  groupsBloc: groupsBloc,
                                   usersBloc: usersBloc,
                                   sharedPreferencesBloc:
                                       SharedPreferencesBloc(),

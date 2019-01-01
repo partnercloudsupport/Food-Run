@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -113,7 +114,6 @@ class GroupsBloc {
     }).catchError((error) => print(error));
   }
 
-  //Do you need to wipe subsets?
   void deleteGroup(Group group) {
     Firestore.instance
         .collection(groupsCollectionRefrence)
@@ -128,5 +128,49 @@ class GroupsBloc {
 
   Stream<List<Group>> getUsersGroups(User signedInUser) {
     return _getUsersGroups(signedInUser.groupIds);
+  }
+
+  void addUserToGroup(User user, Group group) {
+    if (!group.memberIds.contains(user.id)) {
+      group.memberIds.add(user.id);
+      Firestore.instance
+          .collection(groupsCollectionRefrence)
+          .document(group.id)
+          .updateData({"memberIds": group.memberIds})
+          .then((_) => print("Added userId to group"))
+          .catchError((error) => print(error));
+    }
+  }
+
+  void addUserToAdminIds(User signedInUser, Group group) {
+    if (!group.adminIds.contains(signedInUser.id)) {
+      group.adminIds.add(user.id);
+      Firestore.instance
+          .collection(groupsCollectionRefrence)
+          .document(group.id)
+          .updateData({"adminIds": group.adminIds})
+          .then((_) => print("Added userId to group's adminIds"))
+          .catchError((error) => print(error));
+    }
+  }
+
+  void addResturantToGroup(Resturant resturant, Group group) {
+    DocumentReference documentReference = Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .document(group.id);
+    group.resturantIds.add(documentReference.documentID);
+    documentReference
+        .updateData({"resturantIds": group.resturantIds})
+        .then((_) => print("Added resturantsId to group's resturantsId"))
+        .catchError((error) => print(error));
+  }
+
+  void updateGroup(Group group) {
+    Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .document(group.id)
+        .updateData(Group.toMap(group))
+        .then((_) => print("Updated group"))
+        .catchError((error) => print(error));
   }
 }

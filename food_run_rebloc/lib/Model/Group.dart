@@ -8,11 +8,12 @@ class Group {
   int numberOfUsers;
   List<String> memberIds;
   List<String> resturantIds;
+  List<String> adminIds;
   bool canAddOrders;
   bool canRemoveOrders;
   bool canAddResturants;
   bool canRemoveResturants;
-  //List of users???
+
   Group(
       {this.id,
       this.name,
@@ -21,6 +22,7 @@ class Group {
       this.adminPassword,
       this.memberIds,
       this.resturantIds,
+      this.adminIds,
       this.canAddOrders: false,
       this.canRemoveOrders: false,
       this.canAddResturants: false,
@@ -35,6 +37,7 @@ class Group {
       name: documentSnapshot["name"],
       numberOfUsers: documentSnapshot["numberOfUsers"],
       password: documentSnapshot["password"],
+      adminIds: List.from(documentSnapshot["adminIds"] ?? null),
       memberIds: List.from(documentSnapshot["memberIds"] ?? null),
       resturantIds: List.from(documentSnapshot["resturantIds"] ?? null),
       adminPassword: documentSnapshot["adminPassword"],
@@ -51,6 +54,7 @@ class Group {
       "numberOfUsers": group.numberOfUsers,
       "password": group.password,
       "adminPassword": group.adminPassword,
+      "adminIds": group.adminIds ?? [],
       "memberIds": group.memberIds ?? [],
       "resturantIds": group.resturantIds ?? [],
       "canAddOrders": group.canAddOrders ?? false,
@@ -58,5 +62,21 @@ class Group {
       "canAddResturants": group.canAddResturants ?? false,
       "canRemoveResturants": group.canRemoveResturants ?? false
     };
+  }
+
+  static Group copyWith(Group group) {
+    return Group(
+        id: group.id,
+        name: group.name,
+        numberOfUsers: group.numberOfUsers,
+        password: group.password,
+        adminPassword: group.adminPassword,
+        memberIds: group.memberIds,
+        adminIds: group.adminIds,
+        resturantIds: group.resturantIds,
+        canAddOrders: group.canAddOrders,
+        canRemoveOrders: group.canRemoveOrders,
+        canAddResturants: group.canAddResturants,
+        canRemoveResturants: group.canRemoveResturants);
   }
 }

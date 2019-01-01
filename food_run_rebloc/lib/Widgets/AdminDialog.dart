@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 
@@ -25,7 +26,8 @@ class AdminDialog extends StatelessWidget {
   static final GlobalKey<FormState> _adminPasswordKey = GlobalKey<FormState>();
   final Group group;
   final UsersBloc usersBloc;
-  AdminDialog({this.group, this.usersBloc});
+  final GroupsBloc groupsBloc;
+  AdminDialog({this.groupsBloc, this.group, this.usersBloc});
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,7 @@ class AdminDialog extends StatelessWidget {
               if (_adminController.text.toString() == group.adminPassword) {
                 Fluttertoast.showToast(msg: "Welcome new admin!");
                 usersBloc.makeAdmin(group);
+                groupsBloc.addUserToAdminIds(usersBloc.signedInUser, group);
                 Navigator.pop(context, true);
               } else {
                 Fluttertoast.showToast(msg: "Wrong password");

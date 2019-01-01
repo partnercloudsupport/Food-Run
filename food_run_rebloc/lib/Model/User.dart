@@ -45,9 +45,9 @@ class User {
       "name": user.name,
       "email": user.email,
       "password": user.password,
-      "volunteeredGroups": user.volunteeredGroups,
-      "adminForGroups": user.adminForGroups,
-      "groupIds": user.groupIds
+      "volunteeredGroups": user.volunteeredGroups ?? [],
+      "adminForGroups": user.adminForGroups ?? [],
+      "groupIds": user.groupIds ?? [],
     };
     return map;
   }

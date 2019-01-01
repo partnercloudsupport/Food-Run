@@ -59,18 +59,6 @@ class GroupSearch extends SearchDelegate<Group> {
         });
   }
 
-  _onGroupListItemTapped(BuildContext context, Group group,
-      ResturantsAndOrdersBloc resturantsAndOrdersBloc) {
-    Navigator.push(
-        context,
-        new MaterialPageRoute(
-            builder: (context) => ResturantsListScreen(
-                usersBloc: usersBloc,
-                sharedPreferencesBloc: SharedPreferencesBloc(),
-                group: group,
-                resturantsAndOrdersBloc: resturantsAndOrdersBloc)));
-  }
-
   _groupDialog(BuildContext context, Group group) {
     showDialog(
         context: context,
@@ -105,6 +93,7 @@ class GroupSearch extends SearchDelegate<Group> {
                               Fluttertoast.showToast(
                                   msg: "Welcome to ${group.name}");
                               usersBloc.addGroupToUser(user, group);
+                              groupsBloc.addUserToGroup(user, group);
                             }
                             close(context, null);
                           } else {

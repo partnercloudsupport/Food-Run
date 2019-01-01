@@ -52,17 +52,9 @@ class ListPageState extends State<ListPage> {
 
   ListPageState(SharedPreferencesBloc sharedPreferencesBloc) {
     _usersBloc = UsersBloc();
-    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) {
+    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) async {
       if (isLoggedIn) {
-        _usersBloc.getUser(sharedPreferencesBloc.user.id).then((user) {
-          setState(() {
-            _user = user;
-          });
-        });
-      } else {
-        setState(() {
-          _user = new User();
-        });
+        await _usersBloc.getUser(sharedPreferencesBloc.user.id);
       }
       setState(() {
         _isLoggedIn = isLoggedIn;
@@ -74,7 +66,7 @@ class ListPageState extends State<ListPage> {
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    if (_isLoggedIn == null || _user == null) {
+    if (_isLoggedIn == null || _usersBloc.signedInUser == null) {
       return _buildLoadingScreen();
     } else if (_isLoggedIn == true) {
       print("Using groupsBloc in main");

@@ -100,6 +100,14 @@ class AdminSettingsScreenState extends State<AdminSettingsScreen> {
           },
         ),
         RaisedButton(
+          onPressed: () async {
+            await resturantsAndOrdersBloc.ADDTESTORDERSANDRESTURANTS(
+                group, usersBloc.signedInUser);
+            groupsBloc.updateGroup(group);
+          },
+          child: Text("DELETE ME AFTERWARDS"),
+        ),
+        RaisedButton(
           child: Text("Retire as Admin"),
           onPressed: () {
             showDialog(
@@ -144,10 +152,11 @@ class AdminSettingsScreenState extends State<AdminSettingsScreen> {
                       SimpleDialogOption(
                         child: Text("Yes"),
                         onPressed: () async {
-                          await usersBloc.removeGroupFromMembers(group);
-//                          resturantsAndOrdersBloc
-//                              .deleteResturantsAndOrders(group);
-//                          groupsBloc.deleteGroup(group);
+                          await usersBloc
+                              .removeGroupFromMembers(Group.copyWith(group));
+                          resturantsAndOrdersBloc
+                              .deleteResturantsAndOrders(Group.copyWith(group));
+                          groupsBloc.deleteGroup(group);
                           Navigator.popUntil(context, ModalRoute.withName("/"));
                         },
                       ),
@@ -184,10 +193,12 @@ class AdminSettingsScreenState extends State<AdminSettingsScreen> {
 //                  TextEditingController();
 //              var _adminPasswordKey = GlobalKey<FormState>();
               showDialog(
-                      context: context,
-                      builder: (context) =>
-                          AdminDialog(group: group, usersBloc: usersBloc))
-                  .then((correctPassword) {
+                  context: context,
+                  builder: (context) => AdminDialog(
+                        group: group,
+                        usersBloc: usersBloc,
+                        groupsBloc: groupsBloc,
+                      )).then((correctPassword) {
                 if (correctPassword) {}
               });
             },
