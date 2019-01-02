@@ -251,18 +251,37 @@ class UsersBloc {
   }
 
   Future<bool> usernameIsAvailable(String username) async {
+    if (username == null) {
+      print("username is null");
+      return false;
+    }
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(usersCollectionRefrence)
         .where(
-          "testName",
+          "upperName",
           isEqualTo: username.toUpperCase(),
         )
         .getDocuments();
     if (querySnapshot.documents.length > 0) {
+      print("userName is NOT available");
       return false;
     } else {
+      print("userName IS available");
       return true;
     }
+  }
+
+  Future<Null> updateUsername(String username, User user) {
+    user.name = username;
+    Firestore.instance
+        .collection(usersCollectionRefrence)
+        .document(user.id)
+        .updateData(User.toMap(user))
+        .then((_) {
+      print("User updated name");
+    }).catchError((error) {
+      print(error);
+    });
   }
 }
 

@@ -13,7 +13,7 @@ class User {
   List<String> adminForGroups;
   List<String> groupIds;
   List<String> volunteeredGroups;
-  String testName;
+  String get testName => name.toUpperCase();
   User(
       {this.id,
       this.name,
@@ -21,9 +21,7 @@ class User {
       this.adminForGroups,
       this.email,
       this.password,
-      this.groupIds}) {
-    this.testName = name.toUpperCase();
-  }
+      this.groupIds});
   @override
   bool operator ==(other) {
     if (other is User) {
@@ -49,6 +47,7 @@ class User {
     Map<String, dynamic> map = <String, dynamic>{
       "id": user.id,
       "name": user.name,
+      "upperName": user.name.toUpperCase(),
       "email": user.email,
       "password": user.password,
       "volunteeredGroups": user.volunteeredGroups ?? [],

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
@@ -42,14 +43,22 @@ class GroupsListScreenState extends State<GroupsListScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await showDialog(
-        context: context,
-        builder: (BuildContext context) => UsernameDialog(
+    if (user.name == null || user.name == "") {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => UsernameDialog(
               usersBloc: usersBloc,
-            ),
-      );
-    });
+              onAdd: (username) {
+                usersBloc.updateUsername(username, user).then((_) {
+                  Fluttertoast.showToast(msg: "Added User");
+                }).catchError(
+                    (error) => Fluttertoast.showToast(msg: error.toString()));
+              }),
+        );
+      });
+    }
   }
 
   @override
