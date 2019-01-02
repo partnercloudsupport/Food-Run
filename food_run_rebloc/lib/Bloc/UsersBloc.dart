@@ -249,6 +249,21 @@ class UsersBloc {
       print("Got users");
     }
   }
+
+  Future<bool> usernameIsAvailable(String username) async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection(usersCollectionRefrence)
+        .where(
+          "testName",
+          isEqualTo: username.toUpperCase(),
+        )
+        .getDocuments();
+    if (querySnapshot.documents.length > 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 }
 
 class FirebaseAuthData {

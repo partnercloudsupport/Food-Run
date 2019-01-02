@@ -12,6 +12,7 @@ import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
+import 'package:food_run_rebloc/Widgets/UsernameDialog.dart';
 import 'package:rxdart/rxdart.dart';
 
 class GroupsListScreen extends StatefulWidget {
@@ -28,13 +29,26 @@ class GroupsListScreen extends StatefulWidget {
 class GroupsListScreenState extends State<GroupsListScreen> {
   GroupsBloc groupsBloc;
   UsersBloc usersBloc;
-  User user = User();
+  User user;
   GroupsListScreenState({this.usersBloc, this.groupsBloc}) {
     user = usersBloc.signedInUser;
     usersBloc.userStream.listen((user) {
       setState(() {
         this.user = user;
       });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) => UsernameDialog(
+              usersBloc: usersBloc,
+            ),
+      );
     });
   }
 
@@ -56,56 +70,7 @@ class GroupsListScreenState extends State<GroupsListScreen> {
               })
         ],
       ),
-      body: StreamBuilder(
-          stream: groupsBloc.getUsersGroups(user),
-          builder: (context, AsyncSnapshot<List<Group>> asyncSnapshot) {
-            if (asyncSnapshot.hasData) {
-              if (asyncSnapshot.data.length == 0) {
-                return Text("Add Resturants");
-              }
-              return ListView(
-                children: asyncSnapshot.data
-                    .map((group) => GroupListItem(
-                          group: group,
-                          onTap: () => Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return ResturantsListScreen(
-                                  user: user,
-                                  groupsBloc: groupsBloc,
-                                  usersBloc: usersBloc,
-                                  sharedPreferencesBloc:
-                                      SharedPreferencesBloc(),
-                                  resturantsAndOrdersBloc:
-                                      ResturantsAndOrdersBloc(group),
-                                  group: group,
-                                  canAddEdit: Resturant.canAddEdit(user, group),
-                                  canRemove: Resturant.canRemove(user, group),
-                                );
-                              })).then((updatedUser) {
-                                if (updatedUser is User) {
-                                  groupsBloc.user = updatedUser;
-                                }
-                              }),
-                        ))
-                    .toList(),
-              );
-            } else {
-              return Column(
-                children: <Widget>[
-                  Text("No Groups Available"),
-                  RaisedButton(
-                    child: Text("Join a group"),
-                    onPressed: () => showSearch(
-                        context: context,
-                        delegate: GroupSearch(
-                          usersBloc: usersBloc,
-                          groupsBloc: groupsBloc,
-                        )),
-                  ),
-                ],
-              );
-            }
-          }),
+      body: _hasUsername() ? _buildGroupsList() : Container(),
       floatingActionButton: FloatingActionButton(onPressed: () {
         Navigator.push(
             context,
@@ -114,5 +79,64 @@ class GroupsListScreenState extends State<GroupsListScreen> {
                     AddEditGroupScreen(isEdit: false, groupsBloc: groupsBloc)));
       }),
     );
+  }
+
+  Widget _buildGroupsList() {
+    return StreamBuilder(
+        stream: groupsBloc.getUsersGroups(user),
+        builder: (context, AsyncSnapshot<List<Group>> asyncSnapshot) {
+          if (asyncSnapshot.hasData) {
+            if (asyncSnapshot.data.length == 0) {
+              return Text("Add Group");
+            }
+            return ListView(
+              children: asyncSnapshot.data
+                  .map((group) => GroupListItem(
+                        group: group,
+                        onTap: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return ResturantsListScreen(
+                                user: user,
+                                groupsBloc: groupsBloc,
+                                usersBloc: usersBloc,
+                                sharedPreferencesBloc: SharedPreferencesBloc(),
+                                resturantsAndOrdersBloc:
+                                    ResturantsAndOrdersBloc(group),
+                                group: group,
+                                canAddEdit: Resturant.canAddEdit(user, group),
+                                canRemove: Resturant.canRemove(user, group),
+                              );
+                            })).then((updatedUser) {
+                              if (updatedUser is User) {
+                                groupsBloc.user = updatedUser;
+                              }
+                            }),
+                      ))
+                  .toList(),
+            );
+          } else {
+            return Column(
+              children: <Widget>[
+                Text("No Groups Available"),
+                RaisedButton(
+                  child: Text("Join a group"),
+                  onPressed: () => showSearch(
+                      context: context,
+                      delegate: GroupSearch(
+                        usersBloc: usersBloc,
+                        groupsBloc: groupsBloc,
+                      )),
+                ),
+              ],
+            );
+          }
+        });
+  }
+
+  _hasUsername() {
+    if (user.name == "" || user.name == null) {
+      return false;
+    }
+    return true;
   }
 }

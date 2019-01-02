@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 
+/*
+Test name is upper case version of the name.
+There to help us check if a username is taken
+ */
 class User {
   String id;
   String name;
@@ -9,15 +13,17 @@ class User {
   List<String> adminForGroups;
   List<String> groupIds;
   List<String> volunteeredGroups;
-  User({
-    this.id,
-    this.name,
-    this.volunteeredGroups,
-    this.adminForGroups,
-    this.email,
-    this.password,
-    this.groupIds,
-  });
+  String testName;
+  User(
+      {this.id,
+      this.name,
+      this.volunteeredGroups,
+      this.adminForGroups,
+      this.email,
+      this.password,
+      this.groupIds}) {
+    this.testName = name.toUpperCase();
+  }
   @override
   bool operator ==(other) {
     if (other is User) {
