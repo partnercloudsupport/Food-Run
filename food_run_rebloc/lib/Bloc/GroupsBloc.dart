@@ -19,6 +19,7 @@ class GroupsBloc {
 
   User user;
   PublishSubject<User> userStream = PublishSubject<User>();
+
   GroupsBloc({@required this.user}) {
     userStream.add(user);
   }
@@ -76,16 +77,17 @@ class GroupsBloc {
         .catchError((error) => print(error));
     print("Successfully completed query for ${group.name}");
 
-    if (querySnapshot == null) {
-      await _addNewGroup(group);
-      return false;
-    }
-    if (querySnapshot.documents.length > 0) {
-      return true;
-    } else {
-      await _addNewGroup(group);
-      return false;
-    }
+    //We don't need to check if username is taken cause we check before we add
+//    if (querySnapshot == null) {
+//      await _addNewGroup(group);
+//      return false;
+//    }
+//    if (querySnapshot.documents.length > 0) {
+//      return true;
+//    } else {
+//      await _addNewGroup(group);
+//      return false;
+//    }
   }
 
   Future<Null> _addNewGroup(Group group) async {
@@ -172,5 +174,30 @@ class GroupsBloc {
         .updateData(Group.toMap(group))
         .then((_) => print("Updated group"))
         .catchError((error) => print(error));
+  }
+
+  Stream<List<String>> memberIds(Group group) {
+    return Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .document(group.id)
+        .get()
+        .asStream()
+        .map((docSnap) => List.from(docSnap["memberIds"]));
+  }
+
+  Future<bool> isGroupnameAvailable(String name) async {
+    return Firestore.instance
+        .collection(groupsCollectionRefrence)
+        .where("upperName", isEqualTo: name.toUpperCase().toString())
+        .getDocuments()
+        .then((querySnapshot) {
+      if (querySnapshot.documents.length > 0) {
+        print("group name is taken");
+        return false;
+      } else {
+        print("group name is available");
+        return true;
+      }
+    });
   }
 }

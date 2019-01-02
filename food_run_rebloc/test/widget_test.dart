@@ -7,8 +7,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
+import 'package:mockito/mockito.dart';
+
+class MockGroupsBlock extends Mock implements GroupsBloc {}
 
 void main() {
+  test("groups availability", () {
+    var mockGroupsBloc = MockGroupsBlock();
+    mockGroupsBloc.isGroupnameAvailable("gmr");
+  });
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     //await tester.pumpWidget(MyApp(null));

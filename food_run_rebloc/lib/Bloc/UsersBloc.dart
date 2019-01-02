@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
@@ -237,17 +238,21 @@ class UsersBloc {
     });
   }
 
-  Future<void> getUsers(String id) async {
+  Future<List<User>> getUsers(String groupId) async {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(usersCollectionRefrence)
-        .where("groupIds", arrayContains: id)
+        .where("groupIds", arrayContains: groupId)
         .getDocuments();
 
     if (querySnapshot.documents.length > 0) {
       _users =
           querySnapshot.documents.map((doc) => User.fromDocument(doc)).toList();
       print("Got users");
+      return querySnapshot.documents
+          .map((docSnap) => User.fromDocument(docSnap))
+          .toList();
     }
+    return null;
   }
 
   Future<bool> usernameIsAvailable(String username) async {
@@ -283,6 +288,19 @@ class UsersBloc {
       print(error);
     });
   }
+
+  Stream<List<User>> getMembers(Group group) {
+    WriteBatch writeBatch = Firestore.instance.batch();
+    group.memberIds.forEach((userId) async {
+      DocumentSnapshot userSnapshot = await Firestore.instance
+          .collection(usersCollectionRefrence)
+          .document(userId)
+          .get();
+      User user = User.fromDocument(userSnapshot);
+    });
+  }
+
+  List<User> getUsersFromGroup(List<String> memberIds) {}
 }
 
 class FirebaseAuthData {

@@ -8,8 +8,10 @@ import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
+import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/AddEditResturantScreen.dart';
 import 'package:food_run_rebloc/Screen/AdminSettingsScreen.dart';
+import 'package:food_run_rebloc/Screen/GroupMembersScreen.dart';
 import 'package:food_run_rebloc/Screen/OrdersListScreen.dart';
 import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
 
@@ -41,7 +43,11 @@ class ResturantsListScreen extends StatefulWidget {
 }
 
 class ResturantsListScreenState extends State<ResturantsListScreen> {
-  static final List<String> _menuOptions = ["Leave Group", "Admin Settings"];
+  static final List<String> _menuOptions = [
+    "Edit Group",
+    "Admin Settings",
+    "Leave Group"
+  ];
   String menuItem;
   User _user;
 
@@ -66,8 +72,17 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: AppBar(
-        title: Text("Resturants"),
+        title: Text("Resturants for ${widget.group.name}"),
         actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.people),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => GroupMembersScreen(
+                            group: widget.group,
+                            usersBloc: widget.usersBloc,
+                          )))),
           PopupMenuButton<String>(
               initialValue: null,
               onSelected: (menuOption) {
@@ -156,6 +171,20 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
   void _onMenuItemChanged(BuildContext context, String menuOption) {
     if (menuOption != null) {
       switch (menuOption) {
+        case "Edit Group":
+          if (canAddEdit) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddEditGroupScreen(
+                          groupsBloc: widget.groupsBloc,
+                          isEdit: true,
+                          existingGroup: widget.group,
+                        )));
+          } else {
+            Fluttertoast.showToast(msg: "Must be admin to edit group!");
+          }
+          break;
         case "Leave Group":
           widget.usersBloc.leaveGroup(widget.group.id);
           Navigator.pop(context, widget.usersBloc.signedInUser);

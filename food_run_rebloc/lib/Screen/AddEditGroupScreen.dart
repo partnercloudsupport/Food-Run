@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Widgets/AvailabilityWidget.dart';
 
 class AddEditGroupScreen extends StatefulWidget {
   final GroupsBloc groupsBloc;
@@ -22,7 +23,10 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
   TextEditingController _passwordController;
   TextEditingController _adminPasswordController;
 
-  GlobalKey<FormState> _groupsFormsKey = GlobalKey<FormState>();
+  static final GlobalKey<FormState> _groupsFormsKey = GlobalKey<FormState>();
+
+  static final GlobalKey<AvailabilityWidgetState> _availabilityKey =
+      GlobalKey<AvailabilityWidgetState>();
 
   AddEditGroupScreenState(Group group) {
     _group = group;
@@ -49,17 +53,16 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             icon: Icon(Icons.save),
             onPressed: () {
               if (_groupsFormsKey.currentState.validate()) {
-                _groupsFormsKey.currentState.save();
-                widget.groupsBloc
-                    .addNewGroup(_group)
-                    .then((doesGroupAlreadyExist) {
-                  if (doesGroupAlreadyExist) {
-                    Fluttertoast.showToast(msg: "Group name is already taken");
+                if (_availabilityKey.currentState.isAvailable()) {
+                  _groupsFormsKey.currentState.save();
+                  if (widget.isEdit) {
+                    widget.groupsBloc.updateGroup(_group);
                   } else {
-                    Fluttertoast.showToast(msg: "Group was created!");
-                    Navigator.pop(context);
+                    widget.groupsBloc.addNewGroup(_group);
                   }
-                });
+                } else {
+                  Fluttertoast.showToast(msg: "Group name is already taken!");
+                }
               }
             },
           )
@@ -69,9 +72,13 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
           key: _groupsFormsKey,
           child: Column(
             children: <Widget>[
-              TextFormField(
-                initialValue: _group == null ? _group.name : null,
-                validator: (groupName) {
+              AvailabilityWidget(
+                key: _availabilityKey,
+                isAvailable: (input) {
+                  return widget.groupsBloc.isGroupnameAvailable(input);
+                },
+                initialValue: _group != null ? _group.name : null,
+                validator: (String groupName) {
                   if (groupName == null || groupName == "") {
                     return "Group name can't be empty";
                   }

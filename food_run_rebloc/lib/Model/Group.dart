@@ -51,6 +51,7 @@ class Group {
   static Map<String, dynamic> toMap(Group group) {
     return <String, dynamic>{
       "name": group.name,
+      "upperName": group.name.toUpperCase(),
       "numberOfUsers": group.numberOfUsers,
       "password": group.password,
       "adminPassword": group.adminPassword,
