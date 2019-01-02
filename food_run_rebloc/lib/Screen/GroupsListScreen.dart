@@ -6,6 +6,7 @@ import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
@@ -69,6 +70,7 @@ class GroupsListScreenState extends State<GroupsListScreen> {
                           onTap: () => Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
                                 return ResturantsListScreen(
+                                  user: user,
                                   groupsBloc: groupsBloc,
                                   usersBloc: usersBloc,
                                   sharedPreferencesBloc:
@@ -76,6 +78,8 @@ class GroupsListScreenState extends State<GroupsListScreen> {
                                   resturantsAndOrdersBloc:
                                       ResturantsAndOrdersBloc(group),
                                   group: group,
+                                  canAddEdit: Resturant.canAddEdit(user, group),
+                                  canRemove: Resturant.canRemove(user, group),
                                 );
                               })).then((updatedUser) {
                                 if (updatedUser is User) {

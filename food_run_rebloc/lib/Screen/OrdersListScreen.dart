@@ -1,8 +1,10 @@
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/FlareData.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
@@ -14,8 +16,20 @@ class OrdersListScreen extends StatelessWidget {
   final UsersBloc usersBloc;
   final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
   final Resturant resturant;
-  OrdersListScreen(@required this.resturantsAndOrdersBloc,
-      @required this.usersBloc, this.resturant);
+  final Group group;
+
+  final User user;
+//  final bool canAddEdit;
+//  final bool canRemove;
+  OrdersListScreen({
+    @required this.resturantsAndOrdersBloc,
+    @required this.usersBloc,
+    @required this.user,
+    this.resturant,
+    this.group,
+//        this.canAddEdit,
+//        this.canRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +42,7 @@ class OrdersListScreen extends StatelessWidget {
             onPressed: () async {
               if (resturant.numberOfOrders > 0) {
                 await usersBloc.userVolunteerForGroup(resturant);
-                resturantsAndOrdersBloc.updateOrdersForGroup(
-                    resturant, usersBloc.signedInUser);
+                resturantsAndOrdersBloc.updateOrdersForGroup(resturant, user);
               }
             },
           )
@@ -44,12 +57,28 @@ class OrdersListScreen extends StatelessWidget {
                   children: orders.data
                       .map((order) => OrderListItem(
                           order: order,
-                          isVolunteer: _isUserVolunteerForGroup(
-                              resturant, usersBloc.signedInUser),
-                          onTap: () =>
-                              _onOrderListItemTap(context, order, resturant),
-                          onLongPress: () =>
-                              _onOrderListItemLongPress(order, resturant)))
+                          isVolunteer:
+                              _isUserVolunteerForGroup(resturant, user),
+                          onTap: () {
+                            if (Order.canAddEdit(order, user, group)) {
+                              _goToAddEditOrder(
+                                  isEdit: true,
+                                  context: context,
+                                  order: order,
+                                  fromResturant: resturant);
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: "Must be admin to add/edit orders");
+                            }
+                          },
+                          onLongPress: () {
+                            if (group.canRemoveOrders) {
+                              _onOrderListItemLongPress(order, resturant);
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: "Must be admin to remove orders");
+                            }
+                          }))
                       .toList(),
                 );
               }
@@ -66,32 +95,23 @@ class OrdersListScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return AddEditOrderScreen(
-                user: usersBloc.signedInUser,
-                resturant: resturant,
-                isEdit: false,
-                onAdd: resturantsAndOrdersBloc.addOrderToFirestore,
-                onEdit: resturantsAndOrdersBloc.updateOrderToFirestore,
-                onDelete: resturantsAndOrdersBloc.deleteOrderToFirestore,
-              );
-            }))
-//                .then((dictionary) {
-//              ordersBloc.addDataToFirestore(dictionary["order"]);
-//            })
-                ;
+            _goToAddEditOrder(
+                isEdit: false, context: context, fromResturant: resturant);
           }),
     );
   }
 
-  _onOrderListItemTap(
-      BuildContext context, Order order, Resturant fromResturant) {
+  _goToAddEditOrder(
+      {bool isEdit,
+      BuildContext context,
+      Order order,
+      Resturant fromResturant}) {
     Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => AddEditOrderScreen(
-              user: usersBloc.signedInUser,
-              isEdit: true,
+              user: user,
+              isEdit: isEdit,
               resturant: resturant,
               existingOrder: order,
               onAdd: resturantsAndOrdersBloc.addOrderToFirestore,

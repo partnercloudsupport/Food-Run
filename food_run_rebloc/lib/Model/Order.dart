@@ -84,4 +84,16 @@ class Order {
   static TimeOfDay mapToTimeOfDay(Map<String, dynamic> map) {
     return TimeOfDay(hour: map["hour"], minute: map["minute"]);
   }
+
+  static canRemove(Order order, User signedInUser, Group group) {
+    return signedInUser.isAdmin(group) ||
+        group.canRemoveOrders ||
+        order.user == signedInUser;
+  }
+
+  static bool canAddEdit(Order order, User signedInUser, Group group) {
+    return signedInUser.isAdmin(group) ||
+        group.canAddOrders ||
+        order.user == signedInUser;
+  }
 }

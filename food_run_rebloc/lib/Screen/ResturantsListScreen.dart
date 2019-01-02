@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditResturantScreen.dart';
@@ -14,30 +16,51 @@ import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
 class ResturantsListScreen extends StatefulWidget {
   final ResturantsAndOrdersBloc resturantsAndOrdersBloc;
   final Group group;
-  User user;
+  final User user;
   final SharedPreferencesBloc sharedPreferencesBloc;
   final GroupsBloc groupsBloc;
   final UsersBloc usersBloc;
+  final bool canAddEdit;
+  final bool canRemove;
 
-  ResturantsListScreen({
-    @required this.usersBloc,
-    @required this.groupsBloc,
-    @required this.resturantsAndOrdersBloc,
-    @required this.sharedPreferencesBloc,
-    @required this.group,
-  }) {
-    user = usersBloc.signedInUser;
-  }
+  ResturantsListScreen(
+      {@required this.usersBloc,
+      @required this.groupsBloc,
+      @required this.resturantsAndOrdersBloc,
+      @required this.sharedPreferencesBloc,
+      @required this.group,
+      @required this.canAddEdit,
+      @required this.canRemove,
+      @required this.user});
 
   @override
   ResturantsListScreenState createState() {
-    return new ResturantsListScreenState();
+    return new ResturantsListScreenState(
+        canAddEdit: canAddEdit, canRemove: canRemove);
   }
 }
 
 class ResturantsListScreenState extends State<ResturantsListScreen> {
   static final List<String> _menuOptions = ["Leave Group", "Admin Settings"];
   String menuItem;
+  User _user;
+
+  bool canAddEdit;
+  bool canRemove;
+  ResturantsListScreenState({this.canAddEdit, this.canRemove});
+
+  @override
+  void initState() {
+    super.initState();
+    _user = widget.user;
+    widget.usersBloc.userStream.listen((user) {
+      setState(() {
+        _user = user;
+        canAddEdit = Resturant.canAddEdit(user, widget.group);
+        canRemove = Resturant.canRemove(user, widget.group);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +96,15 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
                 children: resturants.data
                     .map((resturant) => ResturantListItem(
                         resturant: resturant,
-                        onTap: () =>
-                            _onResturantListItemTap(context, resturant),
-                        onLongPress: () =>
-                            _onResturantListItemLongPress(context, resturant)))
+                        onTap: () => _goToOrdersList(context, resturant),
+                        onLongPress: () {
+                          if (canAddEdit) {
+                            _goToAddEditResturant(isEdit: true);
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: "Must be admin to add/edit resturants");
+                          }
+                        }))
                     .toList(),
               );
             }
@@ -85,31 +113,26 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return AddEditResturantScreen(
-                isEdit: false,
-                onAdd: (resturant) {
-                  widget.resturantsAndOrdersBloc
-                      .addResturantToFirestore(resturant, widget.group);
-                  widget.groupsBloc
-                      .addResturantToGroup(resturant, widget.group);
-                },
-                onEdit:
-                    widget.resturantsAndOrdersBloc.updateResturantToFirestore,
-                onDelete:
-                    widget.resturantsAndOrdersBloc.deleteResturantToFirestore,
-              );
-            }));
+            if (canAddEdit) {
+              _goToAddEditResturant(isEdit: false);
+            } else {
+              Fluttertoast.showToast(msg: "Must be admin to add resturant");
+            }
           }),
     );
   }
 
-  _onResturantListItemTap(BuildContext context, Resturant resturant) {
+  _goToOrdersList(BuildContext context, Resturant resturant) {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => new OrdersListScreen(
-                widget.resturantsAndOrdersBloc, widget.usersBloc, resturant)));
+                  group: widget.group,
+                  user: _user,
+                  resturantsAndOrdersBloc: widget.resturantsAndOrdersBloc,
+                  usersBloc: widget.usersBloc,
+                  resturant: resturant,
+                )));
   }
 
   _onResturantListItemLongPress(BuildContext context, Resturant resturant) {
@@ -151,5 +174,27 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
                       )));
       }
     }
+  }
+
+  void _goToAddEditResturant({bool isEdit}) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return AddEditResturantScreen(
+        isEdit: isEdit,
+        onAdd: (resturant) {
+          widget.resturantsAndOrdersBloc
+              .addResturantToFirestore(resturant, widget.group);
+          widget.groupsBloc.addResturantToGroup(resturant, widget.group);
+        },
+        onEdit: widget.resturantsAndOrdersBloc.updateResturantToFirestore,
+        onDelete: (Resturant resturant) {
+          if (canRemove) {
+            widget.resturantsAndOrdersBloc
+                .deleteResturantToFirestore(resturant);
+          } else {
+            Fluttertoast.showToast(msg: "Must be admin to delete resturant");
+          }
+        },
+      );
+    }));
   }
 }

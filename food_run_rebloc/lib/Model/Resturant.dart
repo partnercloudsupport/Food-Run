@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/User.dart';
 
 class Resturant {
   String id;
@@ -57,5 +59,13 @@ class Resturant {
           this.website == other.website;
     }
     return false;
+  }
+
+  static canAddEdit(User signedInUser, Group group) {
+    return signedInUser.isAdmin(group) || group.canAddResturants;
+  }
+
+  static canRemove(User signedInUser, Group group) {
+    return signedInUser.isAdmin(group) || group.canRemoveResturants;
   }
 }
