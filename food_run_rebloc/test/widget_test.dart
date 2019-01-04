@@ -8,29 +8,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
+import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
+import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
+import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Screen/SignInSignUpScreen.dart';
+import 'package:food_run_rebloc/Widgets/AvailabilityWidget.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockGroupsBlock extends Mock implements GroupsBloc {}
 
+class MockUsersBloc extends Mock implements UsersBloc {}
+
+class MockSharedPreferences extends Mock implements SharedPreferencesBloc {}
+
 void main() {
-  test("groups availability", () {
-    var mockGroupsBloc = MockGroupsBlock();
-    mockGroupsBloc.isGroupnameAvailable("gmr");
+  testWidgets("groups availability", (WidgetTester tester) async {
+    await tester.pumpAndSettle(Duration(microseconds: 400));
+
+    GlobalKey<AvailabilityWidgetState> key =
+        GlobalKey<AvailabilityWidgetState>();
+    MockUsersBloc mockUsersBloc = MockUsersBloc();
+    MockSharedPreferences mockSharedPreferences = MockSharedPreferences();
+
+    Group group = Group(name: "test group");
+    var homeScreen = _makeTestableWidget(mockUsersBloc, mockSharedPreferences);
+    await tester.pumpWidget(homeScreen);
+
+    var emailText = find.ancestor(matching: find.byKey(Key("Email Address")));
+    await tester.enterText(emailText, "ashkan117@aol.com");
   });
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    //await tester.pumpWidget(MyApp(null));
+}
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+Widget _makeTestableWidget(
+    MockUsersBloc mockUsersBloc, MockSharedPreferences mockSharedPreferences) {
+  return SignInSignUpScreen(
+      isSignIn: false,
+      usersBloc: mockUsersBloc,
+      sharedPreferencesBloc: mockSharedPreferences);
 }

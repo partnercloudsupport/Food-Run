@@ -44,7 +44,7 @@ class OrderListItem extends StatelessWidget {
             ],
           ),
           //order.user.name ??
-          subtitle: Text(order.user.toString()),
+          subtitle: Text(order.user.name),
           onTap: onTap,
           onLongPress: onLongPress,
         ),

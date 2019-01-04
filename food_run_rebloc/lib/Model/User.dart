@@ -12,12 +12,12 @@ class User {
   String password;
   List<String> adminForGroups;
   List<String> groupIds;
-  List<String> volunteeredGroups;
+  List<String> volunteeredResturants;
   String get testName => name.toUpperCase();
   User(
       {this.id,
       this.name,
-      this.volunteeredGroups,
+      this.volunteeredResturants,
       this.adminForGroups,
       this.email,
       this.password,
@@ -36,7 +36,7 @@ class User {
     return new User(
         id: documentSnap.documentID,
         name: documentSnap["name"],
-        volunteeredGroups: List.from(documentSnap["volunteeredGroups"]),
+        volunteeredResturants: List.from(documentSnap["volunteeredResturants"]),
         adminForGroups: List.from(documentSnap["adminForGroups"]),
         email: documentSnap["email"],
         password: documentSnap["password"],
@@ -50,7 +50,7 @@ class User {
       "upperName": user.name.toUpperCase(),
       "email": user.email,
       "password": user.password,
-      "volunteeredGroups": user.volunteeredGroups ?? [],
+      "volunteeredResturants": user.volunteeredResturants ?? [],
       "adminForGroups": user.adminForGroups ?? [],
       "groupIds": user.groupIds ?? [],
     };
@@ -63,7 +63,7 @@ class User {
         name: map["name"],
         email: map["email"],
         password: map["password"],
-        volunteeredGroups: List.from(map["volunteeredGroups"]),
+        volunteeredResturants: List.from(map["volunteeredResturants"]),
         adminForGroups: List.from(map["adminForGroups"]),
         groupIds: List.from(map["groupIds"]));
     return user;
@@ -82,5 +82,10 @@ class User {
       print("user is NOT admin");
     }
     return isAdmin;
+  }
+
+  @override
+  String toString() {
+    return "$name with id $id";
   }
 }

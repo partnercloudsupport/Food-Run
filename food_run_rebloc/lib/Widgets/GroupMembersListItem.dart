@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 
 class GroupMembersListItem extends StatelessWidget {
-  User user;
+  final User user;
   GroupMembersListItem({this.user});
 
   @override

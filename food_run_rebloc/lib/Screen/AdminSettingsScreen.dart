@@ -99,14 +99,14 @@ class AdminSettingsScreenState extends State<AdminSettingsScreen> {
             });
           },
         ),
-        RaisedButton(
-          onPressed: () async {
-            await resturantsAndOrdersBloc.ADDTESTORDERSANDRESTURANTS(
-                group, usersBloc.signedInUser);
-            groupsBloc.updateGroup(group);
-          },
-          child: Text("DELETE ME AFTERWARDS"),
-        ),
+//        RaisedButton(
+//          onPressed: () async {
+//            await resturantsAndOrdersBloc.ADDTESTORDERSANDRESTURANTS(
+//                group, usersBloc.signedInUser);
+//            groupsBloc.updateGroup(group);
+//          },
+//          child: Text("DELETE ME AFTERWARDS"),
+//        ),
         RaisedButton(
           child: Text("Retire as Admin"),
           onPressed: () {

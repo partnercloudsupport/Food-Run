@@ -66,7 +66,7 @@ class GroupsBloc {
         .asyncMap((docSnap) => Group.fromDocumentSnapshot(docSnap));
   }
 
-  Future<bool> addNewGroup(Group group) async {
+  Future addNewGroup(Group group) async {
     print("Need to implement addNewGroup");
     //Check if Groupname is taken
 

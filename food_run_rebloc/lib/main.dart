@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
+import 'package:food_run_rebloc/Model/LoadingState.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/GroupsListScreen.dart';
@@ -46,29 +47,46 @@ class ListPage extends StatefulWidget {
 }
 
 class ListPageState extends State<ListPage> {
-  bool _isLoggedIn;
+  LoadingState loadingState = LoadingState.init;
   UsersBloc _usersBloc;
-  User _user;
 
-  ListPageState(SharedPreferencesBloc sharedPreferencesBloc) {
+  SharedPreferencesBloc sharedPreferencesBloc;
+
+  @override
+  void initState() {
     _usersBloc = UsersBloc();
-    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) async {
-      if (isLoggedIn) {
-        await _usersBloc.getUser(sharedPreferencesBloc.user.id);
-      }
+    loadingState = LoadingState.loading;
+    sharedPreferencesBloc.isLoggedInStream.listen((isLoggedIn) {
       setState(() {
-        _isLoggedIn = isLoggedIn;
+        if (isLoggedIn) {
+          _usersBloc.getUser(sharedPreferencesBloc.user.id);
+          loadingState = LoadingState.signedIn;
+        } else {
+          loadingState = LoadingState.notSignedIn;
+        }
+      });
+    });
+    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) async {
+      setState(() {
+        if (isLoggedIn) {
+          _usersBloc.getUser(sharedPreferencesBloc.user.id);
+          loadingState = LoadingState.signedIn;
+        } else {
+          loadingState = LoadingState.notSignedIn;
+        }
       });
     });
   }
+
+  ListPageState(this.sharedPreferencesBloc);
 
   @override
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    if (_isLoggedIn == null || _usersBloc.signedInUser == null) {
+    if (loadingState == LoadingState.loading) {
       return _buildLoadingScreen();
-    } else if (_isLoggedIn == true) {
+    } else if (loadingState == LoadingState.signedIn) {
       print("Using groupsBloc in main");
       return GroupsListScreen(
         usersBloc: _usersBloc,

@@ -51,9 +51,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.save),
-            onPressed: () {
+            onPressed: () async {
               if (_groupsFormsKey.currentState.validate()) {
-                if (_availabilityKey.currentState.isAvailable()) {
+                if (await _availabilityKey.currentState.isAvailable()) {
                   _groupsFormsKey.currentState.save();
                   if (widget.isEdit) {
                     widget.groupsBloc.updateGroup(_group);
@@ -85,7 +85,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                   return null;
                 },
                 onSaved: (groupName) => this._group.name = groupName,
-                decoration: InputDecoration(hintText: "Group name"),
+                decoration: InputDecoration(
+                    hintText: "Group name",
+                    contentPadding: EdgeInsets.all(16.0)),
               ),
               Text(
                 "Password members must know to join",
@@ -110,7 +112,8 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             return null;
           },
           onSaved: (groupPassword) => this._group.password = groupPassword,
-          decoration: InputDecoration(hintText: "Group password"),
+          decoration: InputDecoration(
+              hintText: "Group password", contentPadding: EdgeInsets.all(16.0)),
         ),
         isEdit
             ? Container()
@@ -128,7 +131,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                 },
                 onSaved: (groupPassword) =>
                     this._group.password = groupPassword,
-                decoration: InputDecoration(hintText: "Confirm group password"),
+                decoration: InputDecoration(
+                    hintText: "Confirm group password",
+                    contentPadding: EdgeInsets.all(16.0)),
               )
       ],
     );
@@ -146,7 +151,8 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             return null;
           },
           onSaved: (adminPassword) => this._group.adminPassword = adminPassword,
-          decoration: InputDecoration(hintText: "Admin Password"),
+          decoration: InputDecoration(
+              hintText: "Admin Password", contentPadding: EdgeInsets.all(16.0)),
         ),
         isEdit
             ? Container()
@@ -164,7 +170,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                 },
                 onSaved: (confirmAdminPassword) =>
                     this._group.adminPassword = confirmAdminPassword,
-                decoration: InputDecoration(hintText: "Confirm admin password"),
+                decoration: InputDecoration(
+                    hintText: "Confirm admin password",
+                    contentPadding: EdgeInsets.all(16.0)),
               )
       ],
     );

@@ -5,7 +5,6 @@ import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
-import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
@@ -54,6 +53,9 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
   bool canAddEdit;
   bool canRemove;
   ResturantsListScreenState({this.canAddEdit, this.canRemove});
+
+  @override
+  void dispose() {}
 
   @override
   void initState() {
@@ -147,24 +149,6 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
                   resturantsAndOrdersBloc: widget.resturantsAndOrdersBloc,
                   usersBloc: widget.usersBloc,
                   resturant: resturant,
-                )));
-  }
-
-  _onResturantListItemLongPress(BuildContext context, Resturant resturant) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => new AddEditResturantScreen(
-                  isEdit: true,
-                  existingResturant: resturant,
-                  onAdd: (resturant) {
-                    widget.resturantsAndOrdersBloc
-                        .addResturantToFirestore(resturant, widget.group);
-                  },
-                  onEdit:
-                      widget.resturantsAndOrdersBloc.updateResturantToFirestore,
-                  onDelete:
-                      widget.resturantsAndOrdersBloc.deleteResturantToFirestore,
                 )));
   }
 

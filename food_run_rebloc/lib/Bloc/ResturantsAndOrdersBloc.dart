@@ -115,10 +115,10 @@ class ResturantsAndOrdersBloc {
         .then((_) {
       print("${orderToDelete.order} by ADD_USER_HERE deleted");
       _decrementResturantToFirestore(resturant);
-      return;
+      return null;
     }).catchError((_) {
       print("Order failed to delete");
-      return;
+      return null;
     });
   }
 
@@ -273,5 +273,14 @@ class ResturantsAndOrdersBloc {
         .add(Order.toMap(order));
 
     group.resturantIds.add(reference.documentID);
+  }
+
+  bool userHasOrder({User user, Resturant resturant}) {
+    List<Order> usersOrders =
+        _orders.where((order) => order.user.id == user.id).toList();
+    if (usersOrders.length > 0) {
+      return true;
+    }
+    return false;
   }
 }

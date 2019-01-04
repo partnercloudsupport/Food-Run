@@ -1,11 +1,8 @@
 import 'dart:async';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
-import 'package:food_run_rebloc/Model/Group.dart';
 
 class AvailabilityWidget extends StatefulWidget {
-  final Future Function(String username) onAdd;
   final String Function(String groupName) validator;
   final Function(String groupName) onSaved;
   final InputDecoration decoration;
@@ -14,7 +11,6 @@ class AvailabilityWidget extends StatefulWidget {
   final GlobalKey<AvailabilityWidgetState> key;
   AvailabilityWidget({
     this.key,
-    this.onAdd,
     this.initialValue,
     this.validator,
     this.onSaved,
@@ -77,6 +73,7 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
                 child: Form(
                   key: _usernameKey,
                   child: TextFormField(
+                    key: Key(widget.decoration.hintText.toString()),
                     autofocus: true,
                     controller: _usernameController,
                     validator: (input) {
@@ -109,7 +106,10 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
                         .isAvailable(_usernameController.text.toString())
                         .then((isAvailable) {
                       setState(() {
-                        if (_usernameController.text.toString().toUpperCase() ==
+                        if (initialValue == null) {
+                        } else if (_usernameController.text
+                                .toString()
+                                .toUpperCase() ==
                             initialValue.toUpperCase()) {
                           isAvailable = true;
                           print("Initial value is ${widget.initialValue}");
@@ -130,7 +130,20 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
     );
   }
 
-  bool isAvailable() {
-    return _isUsernameAvailable;
+  Future<bool> isAvailable() async {
+    if (_usernameKey.currentState.validate()) {
+      _isUsernameAvailable =
+          await widget.isAvailable(_usernameController.text.toString());
+      //await compute(widget.isAvailable, _usernameController.text.toString());
+      setState(() {
+        _isUsernameAvailable;
+      });
+      return _isUsernameAvailable;
+    }
+    return false;
+  }
+
+  void save() {
+    _usernameKey.currentState.save();
   }
 }

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
-import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
-import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/User.dart';
-import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
+import 'package:food_run_rebloc/Widgets/JoinGroupDialog.dart';
 
 class GroupSearch extends SearchDelegate<Group> {
   GroupsBloc groupsBloc;
-  TextEditingController _passwordController = new TextEditingController();
   UsersBloc usersBloc;
   User user;
   GroupSearch({
@@ -52,66 +49,15 @@ class GroupSearch extends SearchDelegate<Group> {
                   children: groupsSnap.data
                       .map((group) => GroupListItem(
                           group: group,
-                          onTap: () => _groupDialog(context, group)))
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (context) => JoinGroupDialog(
+                                  usersBloc: usersBloc,
+                                  groupsBloc: groupsBloc,
+                                  group: group))))
                       .toList(),
                 )
               : Container();
         });
-  }
-
-  _groupDialog(BuildContext context, Group group) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: Text("Enter the Group's Password"),
-              content: new Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(hintText: "Group Password"),
-                    validator: (attempt) {
-                      if (attempt == null || attempt == "") {
-                        return "Return must enter text";
-                      }
-                      return null;
-                    },
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      RaisedButton(
-                        onPressed: () {
-                          bool isCorrect = groupsBloc.isCorrectGroupPassword(
-                              _passwordController.text.toString(), group);
-                          if (isCorrect) {
-                            if (usersBloc.isMember(user, group)) {
-                              Fluttertoast.showToast(
-                                  msg: "Already a member of ${group.name}");
-                            } else {
-                              Fluttertoast.showToast(
-                                  msg: "Welcome to ${group.name}");
-                              usersBloc.addGroupToUser(user, group);
-                              groupsBloc.addUserToGroup(user, group);
-                            }
-                            close(context, null);
-                          } else {
-                            Fluttertoast.showToast(msg: "Wrong Password");
-                          }
-                        },
-                        child: Text("Ok"),
-                      ),
-                      RaisedButton(
-                        onPressed: () {
-                          close(context, null);
-                        },
-                        child: Text("Cancel"),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ));
   }
 }

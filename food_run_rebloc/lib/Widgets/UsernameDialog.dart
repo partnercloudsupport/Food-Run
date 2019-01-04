@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
-import 'package:food_run_rebloc/Model/Group.dart';
 
 class UsernameDialog extends StatefulWidget {
   final UsersBloc usersBloc;

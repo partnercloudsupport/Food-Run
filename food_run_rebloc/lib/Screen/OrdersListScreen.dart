@@ -41,8 +41,15 @@ class OrdersListScreen extends StatelessWidget {
             icon: Icon(Icons.directions_run),
             onPressed: () async {
               if (resturant.numberOfOrders > 0) {
-                await usersBloc.userVolunteerForGroup(resturant);
-                resturantsAndOrdersBloc.updateOrdersForGroup(resturant, user);
+                bool userHasOrder = resturantsAndOrdersBloc.userHasOrder(
+                    user: user, resturant: resturant);
+                if (userHasOrder) {
+                  await usersBloc.userVolunteerForResturant(resturant);
+                  resturantsAndOrdersBloc.updateOrdersForGroup(
+                      resturant, usersBloc.signedInUser);
+                } else {
+                  Fluttertoast.showToast(msg: "Make an active order first");
+                }
               }
             },
           )
@@ -57,8 +64,8 @@ class OrdersListScreen extends StatelessWidget {
                   children: orders.data
                       .map((order) => OrderListItem(
                           order: order,
-                          isVolunteer:
-                              _isUserVolunteerForGroup(resturant, user),
+                          isVolunteer: _isUserVolunteerForResturant(
+                              resturant, order.user),
                           onTap: () {
                             if (Order.canAddEdit(order, user, group)) {
                               _goToAddEditOrder(
@@ -68,7 +75,8 @@ class OrdersListScreen extends StatelessWidget {
                                   fromResturant: resturant);
                             } else {
                               Fluttertoast.showToast(
-                                  msg: "Must be admin to add/edit orders");
+                                  msg:
+                                      "Must be admin to add/edit other people's orders");
                             }
                           },
                           onLongPress: () {
@@ -124,9 +132,9 @@ class OrdersListScreen extends StatelessWidget {
     resturantsAndOrdersBloc.deleteOrderToFirestore(order, fromResturant);
   }
 
-  bool _isUserVolunteerForGroup(Resturant resturant, User user) {
+  bool _isUserVolunteerForResturant(Resturant resturant, User user) {
     bool isVolunteer = false;
-    user.volunteeredGroups.forEach((groupId) {
+    user.volunteeredResturants.forEach((groupId) {
       if (groupId == resturant.id) {
         isVolunteer = true;
       }

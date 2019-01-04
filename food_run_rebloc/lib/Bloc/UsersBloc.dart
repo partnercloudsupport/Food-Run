@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
@@ -160,18 +158,20 @@ class UsersBloc {
     }
   }
 
-  Future<Null> userVolunteerForGroup(Resturant resturant) async {
-    if (signedInUser.volunteeredGroups.contains(resturant.id)) {
-      signedInUser.volunteeredGroups.remove(resturant.id);
+  Future<Null> userVolunteerForResturant(Resturant resturant) async {
+    if (signedInUser.volunteeredResturants.contains(resturant.id)) {
+      signedInUser.volunteeredResturants.remove(resturant.id);
       print("${signedInUser.name} is NOT a volunteer");
     } else {
       print("${signedInUser.name} IS a volunteer");
-      signedInUser.volunteeredGroups.add(resturant.id);
+      signedInUser.volunteeredResturants.add(resturant.id);
     }
     await Firestore.instance
         .collection(usersCollectionRefrence)
         .document(signedInUser.id)
-        .updateData(User.toMap(signedInUser))
+        .updateData({
+          "volunteeredResturants": signedInUser.volunteeredResturants,
+        })
         .then((_) => print("User volunteer status updated"))
         .catchError((error) => print(error));
   }
@@ -210,12 +210,12 @@ class UsersBloc {
             .document(user.id);
 
         user.groupIds.remove(group.id);
-        user.volunteeredGroups.remove(group.id);
+        user.volunteeredResturants.remove(group.id);
         user.adminForGroups.remove(group.id);
 
         writeBatch.updateData(reference, {
           "groupIds": user.groupIds,
-          "volunteeredGroups": user.volunteeredGroups,
+          "volunteeredGroups": user.volunteeredResturants,
           "adminForGroups": user.adminForGroups,
         });
       }
@@ -288,19 +288,6 @@ class UsersBloc {
       print(error);
     });
   }
-
-  Stream<List<User>> getMembers(Group group) {
-    WriteBatch writeBatch = Firestore.instance.batch();
-    group.memberIds.forEach((userId) async {
-      DocumentSnapshot userSnapshot = await Firestore.instance
-          .collection(usersCollectionRefrence)
-          .document(userId)
-          .get();
-      User user = User.fromDocument(userSnapshot);
-    });
-  }
-
-  List<User> getUsersFromGroup(List<String> memberIds) {}
 }
 
 class FirebaseAuthData {

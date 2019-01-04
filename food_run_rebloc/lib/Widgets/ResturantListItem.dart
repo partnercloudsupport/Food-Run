@@ -9,11 +9,19 @@ class ResturantListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new ListTile(
-      title: Text(resturant.name),
-      trailing: new Text(resturant.numberOfOrders.toString()),
-      onLongPress: onLongPress,
-      onTap: onTap,
+    return Column(
+      children: <Widget>[
+        new ListTile(
+          title: Text(resturant.name),
+          trailing: new Text(resturant.numberOfOrders.toString()),
+          onLongPress: onLongPress,
+          onTap: onTap,
+        ),
+        new Divider(
+          height: 25.0,
+          color: Colors.grey,
+        ),
+      ],
     );
   }
 }

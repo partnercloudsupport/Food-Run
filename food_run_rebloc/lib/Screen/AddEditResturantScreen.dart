@@ -125,14 +125,16 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
                   Navigator.pop(context);
                 }
               }),
-          new IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                if (widget.isEdit) {
-                  widget.onDelete(widget.existingResturant);
-                }
-                Navigator.pop(context);
-              })
+          widget.isEdit
+              ? new IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    if (widget.isEdit) {
+                      widget.onDelete(widget.existingResturant);
+                    }
+                    Navigator.pop(context);
+                  })
+              : Container(),
         ],
       ),
       body: SingleChildScrollView(
@@ -190,23 +192,29 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
             onSaved: (name) {
               _resturant.name = name;
             },
-            decoration: InputDecoration(hintText: "Resturant Name"),
+            decoration: InputDecoration(
+                hintText: "Resturant Name",
+                contentPadding: EdgeInsets.all(16.0)),
           ),
           TextFormField(
             controller: _telephoneController,
             onSaved: (telephoneNumber) =>
                 _resturant.telephoneNumber = telephoneNumber,
-            decoration: InputDecoration(hintText: "Telephone Number"),
+            decoration: InputDecoration(
+                hintText: "Telephone Number",
+                contentPadding: EdgeInsets.all(16.0)),
           ),
           TextFormField(
             controller: _addressController,
             onSaved: (address) => _resturant.address = address,
-            decoration: InputDecoration(hintText: "Address"),
+            decoration: InputDecoration(
+                hintText: "Address", contentPadding: EdgeInsets.all(16.0)),
           ),
           TextFormField(
             controller: _websiteController,
             onSaved: (website) => _resturant.website = website,
-            decoration: InputDecoration(hintText: "Website"),
+            decoration: InputDecoration(
+                hintText: "Website", contentPadding: EdgeInsets.all(16.0)),
           ),
         ],
       ),

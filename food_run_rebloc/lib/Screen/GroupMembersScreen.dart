@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
@@ -15,14 +13,6 @@ class GroupMembersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    StreamTransformer<List<String>, List<User>> streamTransformer =
-        StreamTransformer<List<String>, List<User>>((stream, onError) {
-      if (!onError) {
-        stream.last.then((List<String> memberIds) {
-          return usersBloc.getUsersFromGroup(memberIds);
-        });
-      }
-    });
     return Scaffold(
       appBar: AppBar(
         title: Text("Members of ${group.name}"),

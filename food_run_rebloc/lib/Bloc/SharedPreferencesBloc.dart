@@ -1,15 +1,17 @@
 import 'package:food_run_rebloc/Model/User.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesBloc {
   User user;
-
   SharedPreferencesBloc();
+  PublishSubject<bool> isLoggedInStream = PublishSubject<bool>();
 
   Future<bool> isUserLoggedIn() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     user = getUserFromPreferences(preferences);
     if (user.id != null) {
+      print(user.toString());
       print("User is logged in from preferences");
       return true;
     }
@@ -24,7 +26,7 @@ class SharedPreferencesBloc {
     return User(
       id: preferences.getString("id"),
       name: preferences.getString("name"),
-      volunteeredGroups: preferences.getStringList("volunteeredGroups"),
+      volunteeredResturants: preferences.getStringList("volunteeredGroups"),
       adminForGroups: preferences.getStringList("adminForGroups"),
       email: preferences.getString("email"),
       password: preferences.getString("password"),
@@ -37,7 +39,7 @@ class SharedPreferencesBloc {
     sharedPreferences.setString("id", user.id);
     sharedPreferences.setString("name", user.name);
     sharedPreferences.setStringList(
-        "volunteeredGroups", user.volunteeredGroups);
+        "volunteeredGroups", user.volunteeredResturants);
     sharedPreferences.setStringList("adminForGroups", user.adminForGroups);
     sharedPreferences.setString("email", user.email);
     sharedPreferences.setString("password", user.password);
@@ -47,6 +49,7 @@ class SharedPreferencesBloc {
 
   Future signOut() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.clear();
+    print("User signed out");
+    await sharedPreferences.clear();
   }
 }

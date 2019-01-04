@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
@@ -11,10 +9,10 @@ import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
+import 'package:food_run_rebloc/Widgets/FoodRunDrawer.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
 import 'package:food_run_rebloc/Widgets/UsernameDialog.dart';
-import 'package:rxdart/rxdart.dart';
 
 class GroupsListScreen extends StatefulWidget {
   final UsersBloc usersBloc;
@@ -31,39 +29,41 @@ class GroupsListScreenState extends State<GroupsListScreen> {
   GroupsBloc groupsBloc;
   UsersBloc usersBloc;
   User user;
-  GroupsListScreenState({this.usersBloc, this.groupsBloc}) {
+  GroupsListScreenState({this.usersBloc, this.groupsBloc});
+
+  @override
+  void initState() {
+    super.initState();
     user = usersBloc.signedInUser;
     usersBloc.userStream.listen((user) {
       setState(() {
         this.user = user;
       });
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    if (user.name == null || user.name == "") {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) => UsernameDialog(
-              usersBloc: usersBloc,
-              onAdd: (username) {
-                usersBloc.updateUsername(username, user).then((_) {
-                  Fluttertoast.showToast(msg: "Added User");
-                }).catchError(
-                    (error) => Fluttertoast.showToast(msg: error.toString()));
-              }),
-        );
-      });
-    }
+//    if (user.name == null || user.name == "") {
+//      WidgetsBinding.instance.addPostFrameCallback((_) async {
+//        await showDialog(
+//          context: context,
+//          barrierDismissible: false,
+//          builder: (BuildContext context) => UsernameDialog(
+//              usersBloc: usersBloc,
+//              onAdd: (username) {
+//                usersBloc.updateUsername(username, user).then((_) {
+//                  Fluttertoast.showToast(msg: "Added User");
+//                }).catchError(
+//                    (error) => Fluttertoast.showToast(msg: error.toString()));
+//              }),
+//        );
+//      });
+//    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: FoodRunDrawer(
+        SharedPreferencesBloc(),
+      ),
       appBar: AppBar(
         title: Text("Your Groups"),
         actions: <Widget>[
@@ -79,14 +79,16 @@ class GroupsListScreenState extends State<GroupsListScreen> {
               })
         ],
       ),
-      body: _hasUsername() ? _buildGroupsList() : Container(),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    AddEditGroupScreen(isEdit: false, groupsBloc: groupsBloc)));
-      }),
+      body: user != null ? _buildGroupsList() : Container(),
+      floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddEditGroupScreen(
+                        isEdit: false, groupsBloc: groupsBloc)));
+          }),
     );
   }
 
@@ -96,7 +98,7 @@ class GroupsListScreenState extends State<GroupsListScreen> {
         builder: (context, AsyncSnapshot<List<Group>> asyncSnapshot) {
           if (asyncSnapshot.hasData) {
             if (asyncSnapshot.data.length == 0) {
-              return Text("Add Group");
+              return _displayEmptyGroupsList();
             }
             return ListView(
               children: asyncSnapshot.data
@@ -124,20 +126,7 @@ class GroupsListScreenState extends State<GroupsListScreen> {
                   .toList(),
             );
           } else {
-            return Column(
-              children: <Widget>[
-                Text("No Groups Available"),
-                RaisedButton(
-                  child: Text("Join a group"),
-                  onPressed: () => showSearch(
-                      context: context,
-                      delegate: GroupSearch(
-                        usersBloc: usersBloc,
-                        groupsBloc: groupsBloc,
-                      )),
-                ),
-              ],
-            );
+            return _displayEmptyGroupsList();
           }
         });
   }
@@ -147,5 +136,25 @@ class GroupsListScreenState extends State<GroupsListScreen> {
       return false;
     }
     return true;
+  }
+
+  Widget _displayEmptyGroupsList() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.clear,
+            size: 42.0,
+          ),
+          Text(
+            "Join or make a group",
+            style: TextStyle(fontSize: 32.0),
+          )
+        ],
+      ),
+    );
   }
 }

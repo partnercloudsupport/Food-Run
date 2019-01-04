@@ -53,6 +53,7 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
                 } else {
                   _order.user = widget.user;
                   widget.onAdd(_order, widget.resturant);
+                  sendMessage();
                 }
                 Navigator.pop(context);
               }
@@ -81,9 +82,16 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
                 }
               },
               onSaved: (order) => _order.order = order,
-              decoration: InputDecoration(hintText: "What's your order?"),
+              decoration: InputDecoration(
+                  hintText: "What's your order?",
+                  contentPadding: EdgeInsets.all(16.0)),
             ),
-            Text("Selected Time: ${_order.timeOfDay.format(context)}"),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "Selected Time: ${_order.timeOfDay.format(context)}",
+              ),
+            ),
             RaisedButton(
               child: Text("Select time"),
               onPressed: () {
@@ -105,5 +113,9 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
 
   bool _didOrderChange(Order oldOrder, Order newOrder) {
     return !(oldOrder == newOrder);
+  }
+
+  void sendMessage() {
+    //_firebaseMessaging.subscribeToTopic(topic);
   }
 }

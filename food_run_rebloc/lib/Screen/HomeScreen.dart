@@ -15,39 +15,47 @@ class HomeScreen extends StatelessWidget {
         title: Text("Home Screen"),
       ),
       body: Container(
+        decoration: BoxDecoration(
+            image: const DecorationImage(
+          fit: BoxFit.fill,
+          image: const AssetImage("assets/homeScreen.jpg"),
+        )),
         child: Stack(
-            overflow: Overflow.clip,
             fit: StackFit.expand,
+            alignment: AlignmentDirectional.center,
             children: <Widget>[
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  RaisedButton(
-                    child: Text("Sign In"),
-                    onPressed: () => Navigator.pushAndRemoveUntil(
+              Positioned(
+                bottom: 70.0,
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(24.0))),
+                  child: Text("Sign In"),
+                  onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) => SignInSignUpScreen(
                                 isSignIn: true,
                                 usersBloc: usersBloc,
                                 sharedPreferencesBloc: sharedPreferencesBloc)),
-                        (_) => false),
-                  ),
-                  RaisedButton(
-                    child: Text("Sign Up"),
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SignInSignUpScreen(
-                                  isSignIn: false,
-                                  usersBloc: usersBloc,
-                                  sharedPreferencesBloc: sharedPreferencesBloc,
-                                ))),
-                  ),
-                ],
+                      ),
+                ),
               ),
-              Icon(Icons.fastfood),
+              Positioned(
+                bottom: 25.0,
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(24.0))),
+                  child: Text("Sign Up"),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SignInSignUpScreen(
+                                isSignIn: false,
+                                usersBloc: usersBloc,
+                                sharedPreferencesBloc: sharedPreferencesBloc,
+                              ))),
+                ),
+              ),
             ]),
       ),
     );

@@ -19,7 +19,10 @@ class GroupListItem extends StatelessWidget {
               style: TextStyle(fontSize: 28.0),
             ),
           ),
-          Divider(),
+          new Divider(
+            height: 25.0,
+            color: Colors.grey,
+          ),
         ],
       ),
       onTap: onTap,
