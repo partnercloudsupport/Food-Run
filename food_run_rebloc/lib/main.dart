@@ -37,7 +37,8 @@ class MyApp extends StatelessWidget {
 }
 
 class ListPage extends StatefulWidget {
-  final SharedPreferencesBloc sharedPreferencesBloc = SharedPreferencesBloc();
+  final SharedPreferencesBloc sharedPreferencesBloc =
+      SharedPreferencesBloc.getInstance();
   ListPage();
 
   @override
@@ -47,35 +48,30 @@ class ListPage extends StatefulWidget {
 }
 
 class ListPageState extends State<ListPage> {
-  LoadingState loadingState = LoadingState.init;
+  LoginState loginState = LoginState.init;
   UsersBloc _usersBloc;
-
   SharedPreferencesBloc sharedPreferencesBloc;
 
   @override
   void initState() {
-    _usersBloc = UsersBloc();
-    loadingState = LoadingState.loading;
-    sharedPreferencesBloc.isLoggedInStream.listen((isLoggedIn) {
+    super.initState();
+    _usersBloc = UsersBloc.getInstance();
+    loginState = LoginState.loading;
+    sharedPreferencesBloc.isLoggedInStream.listen((loginState) {
+      print(loginState.toString());
       setState(() {
-        if (isLoggedIn) {
+        this.loginState = loginState;
+        if (loginState == LoginState.signedIn) {
           _usersBloc.getUser(sharedPreferencesBloc.user.id);
-          loadingState = LoadingState.signedIn;
-        } else {
-          loadingState = LoadingState.notSignedIn;
         }
       });
     });
-    sharedPreferencesBloc.isUserLoggedIn().then((isLoggedIn) async {
-      setState(() {
-        if (isLoggedIn) {
-          _usersBloc.getUser(sharedPreferencesBloc.user.id);
-          loadingState = LoadingState.signedIn;
-        } else {
-          loadingState = LoadingState.notSignedIn;
-        }
-      });
-    });
+  }
+
+  @override
+  void dispose() {
+    sharedPreferencesBloc.isLoggedInStream.close();
+    super.dispose();
   }
 
   ListPageState(this.sharedPreferencesBloc);
@@ -84,15 +80,15 @@ class ListPageState extends State<ListPage> {
   Widget build(BuildContext context) {
     //return OrdersListScreen(ordersBloc);
     //return new ResturantsListScreen(resturantsAndOrdersBloc);
-    if (loadingState == LoadingState.loading) {
+    if (loginState == LoginState.loading) {
       return _buildLoadingScreen();
-    } else if (loadingState == LoadingState.signedIn) {
+    } else if (loginState == LoginState.signedIn) {
       print("Using groupsBloc in main");
       return GroupsListScreen(
         usersBloc: _usersBloc,
         groupsBloc: GroupsBloc(user: _usersBloc.signedInUser),
       );
-    } else {
+    } else if (loginState == LoginState.notSignedIn) {
       return HomeScreen(
           usersBloc: _usersBloc,
           sharedPreferencesBloc: widget.sharedPreferencesBloc);

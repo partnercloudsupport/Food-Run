@@ -30,7 +30,6 @@ class Order {
   }
 
   static Order fromDocument(DocumentSnapshot documentSnap) {
-    var something = documentSnap;
     var somethingMap = documentSnap["timeOfDay"];
     int hour = somethingMap["hour"];
     int minute = somethingMap["minute"];

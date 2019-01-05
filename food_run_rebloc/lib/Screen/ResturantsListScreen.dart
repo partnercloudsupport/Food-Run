@@ -55,18 +55,17 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
   ResturantsListScreenState({this.canAddEdit, this.canRemove});
 
   @override
-  void dispose() {}
-
-  @override
   void initState() {
     super.initState();
     _user = widget.user;
     widget.usersBloc.userStream.listen((user) {
-      setState(() {
-        _user = user;
-        canAddEdit = Resturant.canAddEdit(user, widget.group);
-        canRemove = Resturant.canRemove(user, widget.group);
-      });
+      if (mounted) {
+        setState(() {
+          _user = user;
+          canAddEdit = Resturant.canAddEdit(user, widget.group);
+          canRemove = Resturant.canRemove(user, widget.group);
+        });
+      } else {}
     });
   }
 

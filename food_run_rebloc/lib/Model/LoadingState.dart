@@ -1,1 +1,1 @@
-enum LoadingState { init, loading, signedIn, notSignedIn }
+enum LoginState { init, loading, signedIn, notSignedIn }

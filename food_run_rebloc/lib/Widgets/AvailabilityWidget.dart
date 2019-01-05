@@ -29,7 +29,6 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
   TextEditingController _usernameController;
   bool _isUsernameAvailable;
   bool _isLoading;
-  String _username;
   String initialValue;
 
   AvailabilityWidgetState(this.initialValue);
@@ -85,9 +84,6 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
                     },
                     onSaved: (input) {
                       widget.onSaved(input);
-                      setState(() {
-                        _username = input;
-                      });
                     },
                     decoration: widget.decoration,
                   ),

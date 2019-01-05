@@ -1,21 +1,42 @@
+import 'package:food_run_rebloc/Model/LoadingState.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesBloc {
   User user;
-  SharedPreferencesBloc();
-  PublishSubject<bool> isLoggedInStream = PublishSubject<bool>();
+  SharedPreferencesBloc._() {
+    _isUserLoggedIn();
+  }
+  static SharedPreferencesBloc _instance;
+  PublishSubject<LoginState> isLoggedInStream = PublishSubject<LoginState>();
 
-  Future<bool> isUserLoggedIn() async {
+  /*
+  Must call initializationDOne
+
+  how to enforce
+   */
+
+  static SharedPreferencesBloc getInstance() {
+    if (_instance == null) {
+      _instance = SharedPreferencesBloc._();
+    }
+    return _instance;
+  }
+
+  Future<bool> _isUserLoggedIn() async {
+    isLoggedInStream.add(LoginState.init);
+    isLoggedInStream.add(LoginState.loading);
     SharedPreferences preferences = await SharedPreferences.getInstance();
     user = getUserFromPreferences(preferences);
     if (user.id != null) {
       print(user.toString());
       print("User is logged in from preferences");
+      isLoggedInStream.add(LoginState.signedIn);
       return true;
     }
     print("User is NOT logged in from preferences");
+    isLoggedInStream.add(LoginState.notSignedIn);
     return false;
   }
 
@@ -50,6 +71,7 @@ class SharedPreferencesBloc {
   Future signOut() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     print("User signed out");
+    isLoggedInStream.add(LoginState.notSignedIn);
     await sharedPreferences.clear();
   }
 }

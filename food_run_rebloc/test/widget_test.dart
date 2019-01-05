@@ -10,11 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
-import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Screen/SignInSignUpScreen.dart';
-import 'package:food_run_rebloc/Widgets/AvailabilityWidget.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MockGroupsBlock extends Mock implements GroupsBloc {}
 
@@ -26,12 +23,9 @@ void main() {
   testWidgets("groups availability", (WidgetTester tester) async {
     await tester.pumpAndSettle(Duration(microseconds: 400));
 
-    GlobalKey<AvailabilityWidgetState> key =
-        GlobalKey<AvailabilityWidgetState>();
     MockUsersBloc mockUsersBloc = MockUsersBloc();
     MockSharedPreferences mockSharedPreferences = MockSharedPreferences();
 
-    Group group = Group(name: "test group");
     var homeScreen = _makeTestableWidget(mockUsersBloc, mockSharedPreferences);
     await tester.pumpWidget(homeScreen);
 

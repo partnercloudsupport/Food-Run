@@ -58,19 +58,8 @@ class GroupsBloc {
     return replaySubject.stream;
   }
 
-  Stream<Group> _searchFirestoreForGroup(String searchInput) {
-    return Firestore.instance
-        .collection(groupsCollectionRefrence)
-        .document(searchInput)
-        .snapshots()
-        .asyncMap((docSnap) => Group.fromDocumentSnapshot(docSnap));
-  }
-
   Future addNewGroup(Group group) async {
-    print("Need to implement addNewGroup");
-    //Check if Groupname is taken
-
-    QuerySnapshot querySnapshot = await Firestore.instance
+    await Firestore.instance
         .collection(groupsCollectionRefrence)
         .where("name", isEqualTo: group.name)
         .getDocuments()
@@ -78,24 +67,6 @@ class GroupsBloc {
     print("Successfully completed query for ${group.name}");
 
     //We don't need to check if username is taken cause we check before we add
-//    if (querySnapshot == null) {
-//      await _addNewGroup(group);
-//      return false;
-//    }
-//    if (querySnapshot.documents.length > 0) {
-//      return true;
-//    } else {
-//      await _addNewGroup(group);
-//      return false;
-//    }
-  }
-
-  Future<Null> _addNewGroup(Group group) async {
-    Firestore.instance
-        .collection(groupsCollectionRefrence)
-        .add(Group.toMap(group))
-        .then((_) => print("Group ${group.name} added"))
-        .catchError((error) => print(error));
   }
 
   bool isCorrectGroupPassword(String attempt, Group group) {

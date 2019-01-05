@@ -17,9 +17,16 @@ class UsersBloc {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   User signedInUser;
-
-  UsersBloc() {
+  static UsersBloc _instance;
+  UsersBloc._() {
     _getUsers();
+  }
+
+  static UsersBloc getInstance() {
+    if (_instance == null) {
+      return UsersBloc._();
+    }
+    return _instance;
   }
 
   Future<FirebaseAuthData> sendEmailVerification(User user) async {

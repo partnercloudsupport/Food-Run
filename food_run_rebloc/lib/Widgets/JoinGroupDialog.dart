@@ -3,7 +3,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
-import 'package:food_run_rebloc/Model/User.dart';
 
 class JoinGroupDialog extends StatelessWidget {
   final TextEditingController _passwordController = new TextEditingController();

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
@@ -12,7 +11,6 @@ import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
 import 'package:food_run_rebloc/Widgets/FoodRunDrawer.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
-import 'package:food_run_rebloc/Widgets/UsernameDialog.dart';
 
 class GroupsListScreen extends StatefulWidget {
   final UsersBloc usersBloc;
@@ -29,6 +27,7 @@ class GroupsListScreenState extends State<GroupsListScreen> {
   GroupsBloc groupsBloc;
   UsersBloc usersBloc;
   User user;
+  Stream<List<Group>> groups;
   GroupsListScreenState({this.usersBloc, this.groupsBloc});
 
   @override
@@ -36,34 +35,19 @@ class GroupsListScreenState extends State<GroupsListScreen> {
     super.initState();
     user = usersBloc.signedInUser;
     usersBloc.userStream.listen((user) {
-      setState(() {
-        this.user = user;
-      });
+      if (mounted) {
+        setState(() {
+          this.user = user;
+          groups = groupsBloc.getUsersGroups(user);
+        });
+      }
     });
-//    if (user.name == null || user.name == "") {
-//      WidgetsBinding.instance.addPostFrameCallback((_) async {
-//        await showDialog(
-//          context: context,
-//          barrierDismissible: false,
-//          builder: (BuildContext context) => UsernameDialog(
-//              usersBloc: usersBloc,
-//              onAdd: (username) {
-//                usersBloc.updateUsername(username, user).then((_) {
-//                  Fluttertoast.showToast(msg: "Added User");
-//                }).catchError(
-//                    (error) => Fluttertoast.showToast(msg: error.toString()));
-//              }),
-//        );
-//      });
-//    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: FoodRunDrawer(
-        SharedPreferencesBloc(),
-      ),
+      drawer: FoodRunDrawer(SharedPreferencesBloc.getInstance(), usersBloc),
       appBar: AppBar(
         title: Text("Your Groups"),
         actions: <Widget>[
@@ -110,7 +94,8 @@ class GroupsListScreenState extends State<GroupsListScreen> {
                                 user: user,
                                 groupsBloc: groupsBloc,
                                 usersBloc: usersBloc,
-                                sharedPreferencesBloc: SharedPreferencesBloc(),
+                                sharedPreferencesBloc:
+                                    SharedPreferencesBloc.getInstance(),
                                 resturantsAndOrdersBloc:
                                     ResturantsAndOrdersBloc(group),
                                 group: group,
@@ -129,13 +114,6 @@ class GroupsListScreenState extends State<GroupsListScreen> {
             return _displayEmptyGroupsList();
           }
         });
-  }
-
-  _hasUsername() {
-    if (user.name == "" || user.name == null) {
-      return false;
-    }
-    return true;
   }
 
   Widget _displayEmptyGroupsList() {

@@ -4,11 +4,14 @@ import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
 
 class UsernameDialog extends StatefulWidget {
   final UsersBloc usersBloc;
-  final Future Function(String username) onAdd;
-  UsernameDialog({
-    @required this.usersBloc,
-    this.onAdd,
-  });
+  final Future Function(String username) onAddEdit;
+  final bool isEdit;
+  final String currentName;
+  UsernameDialog(
+      {@required this.currentName,
+      @required this.usersBloc,
+      this.onAddEdit,
+      @required this.isEdit});
 
   @override
   State<StatefulWidget> createState() {
@@ -18,19 +21,25 @@ class UsernameDialog extends StatefulWidget {
 
 class UsernameDialogState extends State<UsernameDialog> {
   static final GlobalKey<FormState> _usernameKey = new GlobalKey<FormState>();
-  TextEditingController _usernameController = new TextEditingController();
+  TextEditingController _usernameController;
   bool _isUsernameAvailable;
   bool _isLoading;
-  String _username;
 
-  UsernameDialogState() {
+  @override
+  void initState() {
+    super.initState();
     _isLoading = false;
+    if (widget.currentName == null) {
+      _usernameController = new TextEditingController();
+    } else {
+      _usernameController = new TextEditingController(text: widget.currentName);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text("Choose your username"),
+        title: Text("Edit your username"),
         actions: <Widget>[
           FlatButton(
             child: Text("Check Availability"),
@@ -45,6 +54,10 @@ class UsernameDialogState extends State<UsernameDialog> {
                     .then((isAvailable) {
                   setState(() {
                     _isUsernameAvailable = isAvailable;
+                    if (_usernameController.text.toString() ==
+                        widget.currentName) {
+                      _isUsernameAvailable = true;
+                    }
                     _isLoading = false;
                   });
                 });
@@ -56,11 +69,26 @@ class UsernameDialogState extends State<UsernameDialog> {
             onPressed: () {
               if (_usernameKey.currentState.validate()) {
                 _usernameKey.currentState.save();
-                setState(() {
-                  _isLoading = true;
-                });
-                widget.onAdd(_usernameController.text.toString());
+                if (_usernameController.text.toString() != widget.currentName) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  widget
+                      .onAddEdit(_usernameController.text.toString())
+                      .then((_) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  });
+                }
+                Navigator.pop(context);
               }
+            },
+          ),
+          FlatButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.pop(context);
             },
           ),
         ],
@@ -101,9 +129,6 @@ class UsernameDialogState extends State<UsernameDialog> {
                       }
                       return null;
                     },
-                    onSaved: (username) => setState(() {
-                          _username = username;
-                        }),
                   ),
                 ),
               ),

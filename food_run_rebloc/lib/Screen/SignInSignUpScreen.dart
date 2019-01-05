@@ -109,7 +109,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
                   decoration: InputDecoration(hintText: "Username"),
                   validator: (input) {
                     if (input != null || input == "") {
-                      "Can't be empty";
+                      return "Can't be empty";
                     }
                   },
                   onSaved: (name) {
@@ -183,35 +183,23 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
     } else {
       function = widget.usersBloc.sendEmailVerification;
     }
-    function(_user).then((firebaseAuthData) {
+    function(_user).then((firebaseAuthData) async {
       if (firebaseAuthData is FirebaseAuthData) {
         setState(() {
           _isLoading = false;
         });
         _sendToast(firebaseAuthData.message);
         if (firebaseAuthData.user != null) {
-          widget.sharedPreferencesBloc.saveUser(firebaseAuthData.user);
+          await widget.sharedPreferencesBloc.saveUser(firebaseAuthData.user);
           print("Going to Groups List Screen");
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => GroupsListScreen(
-                      usersBloc: UsersBloc(),
+                      usersBloc: widget.usersBloc,
                       groupsBloc: GroupsBloc(user: firebaseAuthData.user))));
         }
       }
     });
-  }
-
-  Widget _buildIndicator() {
-    return Expanded(
-      child: Center(
-          child: FittedBox(
-        child: CircularProgressIndicator(
-          value: 24.0,
-        ),
-        fit: BoxFit.contain,
-      )),
-    );
   }
 }

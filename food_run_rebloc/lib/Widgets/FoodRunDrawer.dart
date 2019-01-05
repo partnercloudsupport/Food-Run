@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
+import 'package:food_run_rebloc/Widgets/UsernameDialog.dart';
 
 class FoodRunDrawer extends StatelessWidget {
-  SharedPreferencesBloc _sharedPreferences;
-  FoodRunDrawer(SharedPreferencesBloc sharedPreferencesBloc) {
-    _sharedPreferences = sharedPreferencesBloc;
-  }
+  final SharedPreferencesBloc sharedPreferencesBloc;
+  final UsersBloc usersBloc;
+  FoodRunDrawer(this.sharedPreferencesBloc, this.usersBloc);
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +20,33 @@ class FoodRunDrawer extends StatelessWidget {
           )),
           ListTile(
             title: Text(
+              "Change Name",
+              style: TextStyle(fontSize: 16.0),
+            ),
+            onTap: () async {
+              await showDialog(
+                  context: context,
+                  builder: (context) => UsernameDialog(
+                      usersBloc: usersBloc,
+                      currentName: usersBloc.signedInUser.name,
+                      isEdit: true,
+                      onAddEdit: (editedName) {
+                        usersBloc.updateUsername(
+                            editedName, usersBloc.signedInUser);
+                      }));
+              Navigator.popUntil(context, ModalRoute.withName("/"));
+            },
+          ),
+          ListTile(
+            title: Text(
               "Sign Out",
               style: TextStyle(fontSize: 16.0),
             ),
             onTap: () async {
-              await _sharedPreferences.signOut();
+              await sharedPreferencesBloc.signOut();
               Navigator.popUntil(context, ModalRoute.withName("/"));
             },
-          )
+          ),
         ],
       ),
     );

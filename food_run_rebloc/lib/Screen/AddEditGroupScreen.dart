@@ -19,7 +19,6 @@ class AddEditGroupScreen extends StatefulWidget {
 
 class AddEditGroupScreenState extends State<AddEditGroupScreen> {
   Group _group;
-  TextEditingController _nameController;
   TextEditingController _passwordController;
   TextEditingController _adminPasswordController;
 
@@ -32,11 +31,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
     _group = group;
     if (group == null) {
       _group = new Group();
-      _nameController = new TextEditingController();
       _passwordController = new TextEditingController();
       _adminPasswordController = new TextEditingController();
     } else {
-      _nameController = new TextEditingController(text: group.name);
       _passwordController = new TextEditingController(text: group.password);
       _adminPasswordController =
           new TextEditingController(text: group.adminPassword);
