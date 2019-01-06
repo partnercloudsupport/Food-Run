@@ -96,7 +96,9 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
         : new Resturant();
     return new Scaffold(
       appBar: new AppBar(
-        title: widget.isEdit ? new Text("Edit Choice") : new Text("Add Choice"),
+        title: widget.isEdit
+            ? new Text("Edit Resturant")
+            : new Text("Add Resturant"),
         actions: <Widget>[
           new IconButton(
               icon: new Icon(Icons.save),
@@ -181,42 +183,44 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
     );
   }
 
-  Form _buildResturantForms() {
-    return Form(
-      key: _resturantFormsKey,
-      child: Column(
-        children: <Widget>[
-          TextFormField(
-            controller: _nameController,
-            validator: (input) => _generalValidator(input),
-            onSaved: (name) {
-              _resturant.name = name;
-            },
-            decoration: InputDecoration(
-                hintText: "Resturant Name",
-                contentPadding: EdgeInsets.all(16.0)),
-          ),
-          TextFormField(
-            controller: _telephoneController,
-            onSaved: (telephoneNumber) =>
-                _resturant.telephoneNumber = telephoneNumber,
-            decoration: InputDecoration(
-                hintText: "Telephone Number",
-                contentPadding: EdgeInsets.all(16.0)),
-          ),
-          TextFormField(
-            controller: _addressController,
-            onSaved: (address) => _resturant.address = address,
-            decoration: InputDecoration(
-                hintText: "Address", contentPadding: EdgeInsets.all(16.0)),
-          ),
-          TextFormField(
-            controller: _websiteController,
-            onSaved: (website) => _resturant.website = website,
-            decoration: InputDecoration(
-                hintText: "Website", contentPadding: EdgeInsets.all(16.0)),
-          ),
-        ],
+  Widget _buildResturantForms() {
+    return SingleChildScrollView(
+      child: Form(
+        key: _resturantFormsKey,
+        child: Column(
+          children: <Widget>[
+            TextFormField(
+              controller: _nameController,
+              validator: (input) => _generalValidator(input),
+              onSaved: (name) {
+                _resturant.name = name;
+              },
+              decoration: InputDecoration(
+                  labelText: "Resturant Name",
+                  contentPadding: EdgeInsets.all(16.0)),
+            ),
+            TextFormField(
+              controller: _telephoneController,
+              onSaved: (telephoneNumber) =>
+                  _resturant.telephoneNumber = telephoneNumber,
+              decoration: InputDecoration(
+                  labelText: "Telephone Number",
+                  contentPadding: EdgeInsets.all(16.0)),
+            ),
+            TextFormField(
+              controller: _addressController,
+              onSaved: (address) => _resturant.address = address,
+              decoration: InputDecoration(
+                  labelText: "Address", contentPadding: EdgeInsets.all(16.0)),
+            ),
+            TextFormField(
+              controller: _websiteController,
+              onSaved: (website) => _resturant.website = website,
+              decoration: InputDecoration(
+                  labelText: "Website", contentPadding: EdgeInsets.all(16.0)),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -115,7 +115,8 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
                         onTap: () => _goToOrdersList(context, resturant),
                         onLongPress: () {
                           if (canAddEdit) {
-                            _goToAddEditResturant(isEdit: true);
+                            _goToAddEditResturant(
+                                isEdit: true, resturant: resturant);
                           } else {
                             Fluttertoast.showToast(
                                 msg: "Must be admin to add/edit resturants");
@@ -188,15 +189,16 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
     }
   }
 
-  void _goToAddEditResturant({bool isEdit}) {
+  void _goToAddEditResturant({bool isEdit, Resturant resturant}) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return AddEditResturantScreen(
         isEdit: isEdit,
-        onAdd: (resturant) {
-          widget.resturantsAndOrdersBloc
-              .addResturantToFirestore(resturant, widget.group);
+        onAdd: (Resturant resturant) {
+          resturant.groupId = widget.group.id;
+          widget.resturantsAndOrdersBloc.addResturantToFirestore(resturant);
           widget.groupsBloc.addResturantToGroup(resturant, widget.group);
         },
+        existingResturant: isEdit ? resturant : null,
         onEdit: widget.resturantsAndOrdersBloc.updateResturantToFirestore,
         onDelete: (Resturant resturant) {
           if (canRemove) {

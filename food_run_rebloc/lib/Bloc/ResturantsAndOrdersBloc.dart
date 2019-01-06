@@ -29,17 +29,15 @@ class ResturantsAndOrdersBloc {
 
   ResturantsAndOrdersBloc._internal(this.group);
 
-  void addResturantToFirestore(Resturant resturant, Group group) {
-    if (!group.resturantIds.contains(resturant.id)) {
-      Firestore.instance
-          .collection(resturantsCollectionRefrence)
-          .document(group.id)
-          .collection(resturantsCollectionRefrence)
-          .add(Resturant.toMap(resturant))
-          .then((_) => print("Resturant: ${resturant.name} Added"))
-          .catchError(
-              (_) => print("Resturant: ${resturant.name} being added failed"));
-    }
+  void addResturantToFirestore(Resturant resturant) {
+    Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(resturant.groupId)
+        .collection(resturantsCollectionRefrence)
+        .add(Resturant.toMap(resturant))
+        .then((_) => print("Resturant: ${resturant.name} Added"))
+        .catchError(
+            (_) => print("Resturant: ${resturant.name} being added failed"));
   }
 
   void deleteResturantToFirestore(Resturant resturant) {
@@ -87,21 +85,26 @@ class ResturantsAndOrdersBloc {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //Orders
 
-  Future<Null> addOrderToFirestore(
-      Order orderToAdd, Resturant resturant) async {
+  Future<Order> addOrderToFirestore(
+      Order orderToAdd, Resturant resturant, User signedInUser) async {
     orderToAdd.resturantId = resturant.id;
+    orderToAdd.userAttributes = {
+      "userId": signedInUser.id,
+      "userName": signedInUser.name
+    };
     CollectionReference collectionReference = Firestore.instance
         .collection(ordersCollectionRefrence)
         .document(resturant.id)
         .collection(ordersCollectionRefrence);
-    await collectionReference.add(Order.toMap(orderToAdd)).then((_) {
-      print("Order Added");
-      _incrementResturantToFirestore(resturant);
-      return;
-    }).catchError((_) {
+    DocumentReference reference =
+        await collectionReference.add(Order.toMap(orderToAdd)).catchError((_) {
       print("Order being added failed");
-      return;
+      return null;
     });
+    print("Order Added");
+    _incrementResturantToFirestore(resturant);
+    orderToAdd.id = reference.documentID;
+    return orderToAdd;
   }
 
   Future<Null> deleteOrderToFirestore(
@@ -178,9 +181,15 @@ class ResturantsAndOrdersBloc {
             "Resturant: ${resturant.name} failed to increment order number"));
   }
 
+  void updateResturantsVolunteers(Resturant resturant, User signedInUser) {
+    Firestore.instance
+        .collection(resturantsCollectionRefrence)
+        .document(resturant.groupId);
+  }
+
   void updateOrdersForGroup(Resturant resturant, User signedInUser) {
     List<Order> changedOrders = _orders.where((order) {
-      if (order.user.id == signedInUser.id) {
+      if (order.userAttributes["userId"] == signedInUser.id) {
         return true;
       }
       return false;
@@ -195,7 +204,7 @@ class ResturantsAndOrdersBloc {
           .document(resturant.id)
           .collection(ordersCollectionRefrence)
           .document(order.id);
-      order.user = signedInUser;
+      order.userAttributes["userId"] = signedInUser.id;
       writeBatch.updateData(documentReference, Order.toMap(order));
     });
 
@@ -264,8 +273,7 @@ class ResturantsAndOrdersBloc {
         .collection(resturantsCollectionRefrence)
         .add(Resturant.toMap(resturant));
     print("RESTURANTS ID IS ${reference.documentID}");
-    Order order =
-        Order(order: "Burger", user: user, resturantId: reference.documentID);
+    Order order = Order(order: "Burger", resturantId: reference.documentID);
     Firestore.instance
         .collection(ordersCollectionRefrence)
         .document(reference.documentID)
@@ -276,11 +284,42 @@ class ResturantsAndOrdersBloc {
   }
 
   bool userHasOrder({User user, Resturant resturant}) {
-    List<Order> usersOrders =
-        _orders.where((order) => order.user.id == user.id).toList();
+    List<Order> usersOrders = _orders
+        .where((order) => order.userAttributes["userId"] == user.id)
+        .toList();
     if (usersOrders.length > 0) {
       return true;
     }
     return false;
+  }
+
+  static void updateUsernameOnOrders(User user) {
+    //get all resturants
+    //get all orders with name user.name
+    user.activeResturants.forEach((resturantId) async {
+      QuerySnapshot querySnapshot = await Firestore.instance
+          .collection(ordersCollectionRefrence)
+          .document(resturantId)
+          .collection(ordersCollectionRefrence)
+          .where("userAttributes", isGreaterThanOrEqualTo: {
+        "userId": user.id,
+        "userName": ""
+      }).getDocuments();
+      List<Order> usersOrders = querySnapshot.documents
+          .map((docSnap) => Order.fromDocument(docSnap))
+          .toList();
+      usersOrders.forEach((order) {
+        Firestore.instance
+            .collection(ordersCollectionRefrence)
+            .document(resturantId)
+            .collection(ordersCollectionRefrence)
+            .document(order.id)
+            .updateData({
+          "userAttributes": {"userId": user.id, "userName": user.name}
+        }).then((_) {
+          print("updated username in orders");
+        });
+      });
+    });
   }
 }

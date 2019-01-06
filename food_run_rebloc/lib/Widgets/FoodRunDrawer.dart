@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
+import 'package:food_run_rebloc/Bloc/ResturantsAndOrdersBloc.dart';
 import 'package:food_run_rebloc/Bloc/SharedPreferencesBloc.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
+import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Widgets/UsernameDialog.dart';
 
 class FoodRunDrawer extends StatelessWidget {
   final SharedPreferencesBloc sharedPreferencesBloc;
   final UsersBloc usersBloc;
-  FoodRunDrawer(this.sharedPreferencesBloc, this.usersBloc);
+  final GroupsBloc groupsBloc;
+  FoodRunDrawer(this.sharedPreferencesBloc, this.usersBloc, this.groupsBloc);
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +34,11 @@ class FoodRunDrawer extends StatelessWidget {
                       usersBloc: usersBloc,
                       currentName: usersBloc.signedInUser.name,
                       isEdit: true,
-                      onAddEdit: (editedName) {
-                        usersBloc.updateUsername(
+                      onAddEdit: (editedName) async {
+                        await usersBloc.updateUsername(
                             editedName, usersBloc.signedInUser);
+                        ResturantsAndOrdersBloc.updateUsernameOnOrders(
+                            usersBloc.signedInUser);
                       }));
               Navigator.popUntil(context, ModalRoute.withName("/"));
             },

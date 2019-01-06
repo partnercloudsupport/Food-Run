@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -111,29 +112,28 @@ class UsersBloc {
   }
 
   void addGroupToUser(User user, Group group) {
-    if (user.groupIds == null) {
-      user.groupIds = <String>[group.id];
-    } else {
+    if (!user.groupIds.contains(group.id)) {
       user.groupIds.add(group.id);
+      Firestore.instance
+          .collection(usersCollectionRefrence)
+          .document(user.id)
+          .updateData(User.toMap(user))
+          .then((_) => print("added group to user"))
+          .catchError((error) => print(error));
+    } else {
+      print("user already a member of group");
     }
-    Firestore.instance
-        .collection(usersCollectionRefrence)
-        .document(user.id)
-        .updateData(User.toMap(user))
-        .then((_) => print("added group to user"))
-        .catchError((error) => print(error));
   }
 
   bool isMember(User user, Group group) {
-    if (user.groupIds == null) {
-      return false;
-    }
+    bool isMember = false;
     user.groupIds.forEach((groupId) {
       if (groupId == group.id) {
-        return true;
+        isMember = true;
+        return;
       }
     });
-    return false;
+    return isMember;
   }
 
   Future<User> getUser(String id) async {
@@ -173,6 +173,7 @@ class UsersBloc {
       print("${signedInUser.name} IS a volunteer");
       signedInUser.volunteeredResturants.add(resturant.id);
     }
+
     await Firestore.instance
         .collection(usersCollectionRefrence)
         .document(signedInUser.id)
@@ -262,16 +263,21 @@ class UsersBloc {
     return null;
   }
 
-  Future<bool> usernameIsAvailable(String username) async {
-    if (username == null) {
+  Future<bool> usernameIsAvailable(String newName) async {
+    if (newName == null) {
       print("username is null");
       return false;
+    }
+    if (signedInUser != null) {
+      if (newName == signedInUser.name) {
+        return true;
+      }
     }
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(usersCollectionRefrence)
         .where(
           "upperName",
-          isEqualTo: username.toUpperCase(),
+          isEqualTo: newName.toUpperCase(),
         )
         .getDocuments();
     if (querySnapshot.documents.length > 0) {
@@ -293,6 +299,32 @@ class UsersBloc {
       print("User updated name");
     }).catchError((error) {
       print(error);
+    });
+  }
+
+  void addOrderToUser(String orderId, String resturantId) {
+    signedInUser.activeOrders.add(orderId);
+    if (!signedInUser.activeResturants.contains(resturantId)) {
+      signedInUser.activeResturants.add(resturantId);
+    }
+    Firestore.instance
+        .collection(usersCollectionRefrence)
+        .document(signedInUser.id)
+        .updateData({
+      "activeOrders": signedInUser.activeOrders,
+      "activeResturants": signedInUser.activeResturants
+    });
+  }
+
+  void removeOrdersFromUser(String orderId, String resturantId) {
+    signedInUser.activeResturants.remove(resturantId);
+    signedInUser.activeOrders.remove(orderId);
+    Firestore.instance
+        .collection(usersCollectionRefrence)
+        .document(signedInUser.id)
+        .updateData({
+      "activeOrders": signedInUser.activeOrders,
+      "activeResturants": signedInUser.activeResturants
     });
   }
 }

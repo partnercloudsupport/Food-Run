@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
+import 'package:food_run_rebloc/Model/Order.dart';
 
 /*
 Test name is upper case version of the name.
@@ -13,15 +14,19 @@ class User {
   List<String> adminForGroups;
   List<String> groupIds;
   List<String> volunteeredResturants;
+  List<String> activeOrders;
+  List<String> activeResturants;
   String get testName => name.toUpperCase();
   User(
       {this.id,
       this.name,
-      this.volunteeredResturants,
-      this.adminForGroups,
+      this.volunteeredResturants = const [],
+      this.activeResturants = const [],
+      this.adminForGroups = const [],
       this.email,
       this.password,
-      this.groupIds});
+      this.groupIds = const [],
+      this.activeOrders = const []});
   @override
   bool operator ==(other) {
     if (other is User) {
@@ -36,11 +41,14 @@ class User {
     return new User(
         id: documentSnap.documentID,
         name: documentSnap["name"],
-        volunteeredResturants: List.from(documentSnap["volunteeredResturants"]),
-        adminForGroups: List.from(documentSnap["adminForGroups"]),
+        volunteeredResturants:
+            List.from(documentSnap["volunteeredResturants"] ?? []),
+        activeResturants: List.from(documentSnap["activeResturants"] ?? []),
+        adminForGroups: List.from(documentSnap["adminForGroups"] ?? []),
         email: documentSnap["email"],
         password: documentSnap["password"],
-        groupIds: List.from(documentSnap["groupIds"]));
+        activeOrders: List.from(documentSnap["activeOrders"] ?? []),
+        groupIds: List.from(documentSnap["groupIds"] ?? []));
   }
 
   static Map<String, dynamic> toMap(User user) {
@@ -50,9 +58,11 @@ class User {
       "upperName": user.name.toUpperCase(),
       "email": user.email,
       "password": user.password,
+      "activeResturants": user.activeResturants ?? [],
       "volunteeredResturants": user.volunteeredResturants ?? [],
       "adminForGroups": user.adminForGroups ?? [],
       "groupIds": user.groupIds ?? [],
+      "activeOrders": user.activeOrders ?? []
     };
     return map;
   }
@@ -63,6 +73,8 @@ class User {
         name: map["name"],
         email: map["email"],
         password: map["password"],
+        activeResturants: map["activeResturants"],
+        activeOrders: List.from(map["activeOrders"]),
         volunteeredResturants: List.from(map["volunteeredResturants"]),
         adminForGroups: List.from(map["adminForGroups"]),
         groupIds: List.from(map["groupIds"]));
@@ -76,6 +88,7 @@ class User {
       if (groupId == group.id) {
         print("user is admin");
         isAdmin = true;
+        return;
       }
     });
     if (!isAdmin) {

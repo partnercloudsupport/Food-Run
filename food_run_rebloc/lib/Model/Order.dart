@@ -5,20 +5,32 @@ import 'package:food_run_rebloc/Model/User.dart';
 
 class Order {
   String order;
-  User user;
+  //User user;
   String id;
+  Map<String, String> userAttributes;
   String resturantId;
   TimeOfDay timeOfDay;
 
   Order(
-      {this.order, User user, this.id, this.resturantId, TimeOfDay timeOfDay}) {
-    this.user = user == null ? new User() : user;
+      {this.order,
+      //User user,
+      this.id,
+      this.resturantId,
+      this.userAttributes,
+      TimeOfDay timeOfDay}) {
+    //this.user = user == null ? new User() : user;
     this.timeOfDay = timeOfDay == null ? TimeOfDay.now() : timeOfDay;
+    if (userAttributes == null) {
+      userAttributes = {
+        "userId": null,
+        "userName": "",
+      };
+    }
   }
 
   //returns true if admin or if the sameUser
   bool isEditable(User currentSignInUser, Group group) {
-    if (this.user == currentSignInUser) {
+    if (this.userAttributes["userId"] == currentSignInUser.id) {
       return true;
     }
     currentSignInUser.adminForGroups.forEach((groupId) {
@@ -37,7 +49,8 @@ class Order {
     return new Order(
       id: documentSnap.documentID,
       order: documentSnap["order"],
-      user: User.fromMap(documentSnap["user"]),
+      //user: User.fromMap(documentSnap["user"]),
+      userAttributes: userAttributesFromMap(documentSnap["userAttributes"]),
       resturantId: documentSnap["resturantName"],
       timeOfDay: timeOfDay,
     );
@@ -46,7 +59,8 @@ class Order {
   static Map<String, dynamic> toMap(Order order) {
     return <String, dynamic>{
       "order": order.order,
-      "user": User.toMap(order.user),
+      //"user": User.toMap(order.user),
+      "userAttributes": order.userAttributes,
       "resturantName": order.resturantId,
       "timeOfDay": timeOfDayToMap(order.timeOfDay)
     };
@@ -56,7 +70,7 @@ class Order {
   bool operator ==(other) {
     if (other is Order) {
       return this.order == other.order &&
-          this.user == other.user &&
+          //this.user == other.user &&
           this.resturantId == other.resturantId &&
           this.timeOfDay == other.timeOfDay;
     }
@@ -66,9 +80,10 @@ class Order {
   static Order copyWith(Order existingOrder) {
     return new Order(
         order: existingOrder.order,
-        user: existingOrder.user,
+        //user: existingOrder.user,
         resturantId: existingOrder.resturantId,
         id: existingOrder.id,
+        userAttributes: existingOrder.userAttributes,
         timeOfDay: existingOrder.timeOfDay);
   }
 
@@ -87,12 +102,19 @@ class Order {
   static canRemove(Order order, User signedInUser, Group group) {
     return signedInUser.isAdmin(group) ||
         group.canRemoveOrders ||
-        order.user == signedInUser;
+        order.userAttributes["userId"] == signedInUser.id;
   }
 
   static bool canAddEdit(Order order, User signedInUser, Group group) {
     return signedInUser.isAdmin(group) ||
         group.canAddOrders ||
-        order.user == signedInUser;
+        order.userAttributes["userId"] == signedInUser.id;
+  }
+
+  static Map<String, String> userAttributesFromMap(Map documentSnap) {
+    return <String, String>{
+      "userId": documentSnap["userId"],
+      "userName": documentSnap["userName"]
+    };
   }
 }

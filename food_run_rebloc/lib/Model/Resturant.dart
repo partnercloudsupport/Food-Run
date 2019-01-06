@@ -9,18 +9,24 @@ class Resturant {
   String telephoneNumber;
   String address;
   String website;
+  List<String> volunteers;
+  String groupId;
 
   Resturant(
       {this.id,
       this.name,
+      this.groupId,
       this.numberOfOrders: 0,
       this.telephoneNumber,
       this.address,
+      this.volunteers,
       this.website});
 
   static Map<String, dynamic> toMap(Resturant resturant) {
     return <String, dynamic>{
       "name": resturant.name,
+      "groupId": resturant.groupId,
+      "volunteers": resturant.volunteers,
       "numberOfOrders": resturant.numberOfOrders,
       "telephoneNumber": resturant.telephoneNumber,
       "address": resturant.address,
@@ -32,6 +38,8 @@ class Resturant {
     return new Resturant(
       id: docSnapshot.documentID,
       name: docSnapshot["name"],
+      groupId: docSnapshot["groupId"],
+      volunteers: List.from(docSnapshot["volunteers"] ?? []),
       numberOfOrders: docSnapshot["numberOfOrders"],
       telephoneNumber: docSnapshot["telephoneNumber"],
       address: docSnapshot["address"],
@@ -43,6 +51,8 @@ class Resturant {
     return Resturant(
         id: resturant.id,
         name: resturant.name,
+        groupId: resturant.groupId,
+        volunteers: resturant.volunteers,
         numberOfOrders: resturant.numberOfOrders,
         telephoneNumber: resturant.telephoneNumber,
         address: resturant.address,

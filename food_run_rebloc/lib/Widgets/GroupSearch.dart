@@ -21,8 +21,13 @@ class GroupSearch extends SearchDelegate<Group> {
   List<Widget> buildActions(BuildContext context) {
     //Actions for the query
     //Like clear
-    // TODO: implement buildActions
-    return null;
+    return [
+      IconButton(
+          icon: Icon(Icons.clear),
+          onPressed: () {
+            query = "";
+          })
+    ];
   }
 
   @override
@@ -34,7 +39,25 @@ class GroupSearch extends SearchDelegate<Group> {
   @override
   Widget buildResults(BuildContext context) {
     //The results shown after the user submits a search from the search page.
-    return buildSuggestions(context);
+    return FutureBuilder(
+      future: groupsBloc.getResults(query).last,
+      builder: (context, AsyncSnapshot<List<Group>> groupsSnapshot) {
+        if (groupsSnapshot.hasData) {
+          ListView(
+            children: groupsSnapshot.data
+                .map((group) => GroupListItem(
+                    group: group,
+                    onTap: () => showDialog(
+                        context: context,
+                        builder: (context) => JoinGroupDialog(
+                            usersBloc: usersBloc,
+                            groupsBloc: groupsBloc,
+                            group: group))))
+                .toList(),
+          );
+        }
+      },
+    );
   }
 
   @override

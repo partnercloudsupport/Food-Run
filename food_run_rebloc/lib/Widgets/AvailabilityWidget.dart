@@ -83,14 +83,16 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
                       return null;
                     },
                     onSaved: (input) {
-                      widget.onSaved(input);
+                      if (widget.onSaved != null) {
+                        widget.onSaved(input);
+                      }
                     },
                     decoration: widget.decoration,
                   ),
                 ),
               ),
               _trailingWidget(),
-              RaisedButton(
+              FlatButton(
                 child: Text("Check Availability"),
                 onPressed: () {
                   if (_usernameKey.currentState.validate()) {
@@ -102,16 +104,6 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
                         .isAvailable(_usernameController.text.toString())
                         .then((isAvailable) {
                       setState(() {
-                        if (initialValue == null) {
-                        } else if (_usernameController.text
-                                .toString()
-                                .toUpperCase() ==
-                            initialValue.toUpperCase()) {
-                          isAvailable = true;
-                          print("Initial value is ${widget.initialValue}");
-                          print(
-                              "Overriding future since input was same as initial value");
-                        }
                         _isUsernameAvailable = isAvailable;
                         _isLoading = false;
                       });
@@ -141,5 +133,9 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
 
   void save() {
     _usernameKey.currentState.save();
+  }
+
+  bool validate() {
+    return _usernameKey.currentState.validate();
   }
 }

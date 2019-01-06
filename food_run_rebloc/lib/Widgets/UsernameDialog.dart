@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/UsersBloc.dart';
+import 'package:food_run_rebloc/Widgets/AvailabilityWidget.dart';
 
 class UsernameDialog extends StatefulWidget {
   final UsersBloc usersBloc;
@@ -20,20 +22,18 @@ class UsernameDialog extends StatefulWidget {
 }
 
 class UsernameDialogState extends State<UsernameDialog> {
-  static final GlobalKey<FormState> _usernameKey = new GlobalKey<FormState>();
-  TextEditingController _usernameController;
+  static final GlobalKey<AvailabilityWidgetState> _usernameKey =
+      new GlobalKey<AvailabilityWidgetState>();
   bool _isUsernameAvailable;
   bool _isLoading;
+  String currentName;
+  String _username;
 
   @override
   void initState() {
     super.initState();
     _isLoading = false;
-    if (widget.currentName == null) {
-      _usernameController = new TextEditingController();
-    } else {
-      _usernameController = new TextEditingController(text: widget.currentName);
-    }
+    currentName = widget.currentName;
   }
 
   @override
@@ -42,46 +42,24 @@ class UsernameDialogState extends State<UsernameDialog> {
         title: Text("Edit your username"),
         actions: <Widget>[
           FlatButton(
-            child: Text("Check Availability"),
-            onPressed: () {
-              if (_usernameKey.currentState.validate()) {
-                _usernameKey.currentState.save();
-                setState(() {
-                  _isLoading = true;
-                });
-                widget.usersBloc
-                    .usernameIsAvailable(_usernameController.text.toString())
-                    .then((isAvailable) {
-                  setState(() {
-                    _isUsernameAvailable = isAvailable;
-                    if (_usernameController.text.toString() ==
-                        widget.currentName) {
-                      _isUsernameAvailable = true;
-                    }
-                    _isLoading = false;
-                  });
-                });
-              }
-            },
-          ),
-          FlatButton(
             child: Text("Submit"),
-            onPressed: () {
+            onPressed: () async {
+              _isUsernameAvailable =
+                  await _usernameKey.currentState.isAvailable();
               if (_usernameKey.currentState.validate()) {
-                _usernameKey.currentState.save();
-                if (_usernameController.text.toString() != widget.currentName) {
+                if (_isUsernameAvailable) {
+                  _usernameKey.currentState.save();
                   setState(() {
                     _isLoading = true;
                   });
-                  widget
-                      .onAddEdit(_usernameController.text.toString())
-                      .then((_) {
-                    setState(() {
-                      _isLoading = false;
-                    });
+                  await widget.onAddEdit(_username);
+                  setState(() {
+                    _isLoading = false;
                   });
+                  Navigator.pop(context);
+                } else {
+                  Fluttertoast.showToast(msg: "Username is taken");
                 }
-                Navigator.pop(context);
               }
             },
           ),
@@ -92,47 +70,34 @@ class UsernameDialogState extends State<UsernameDialog> {
             },
           ),
         ],
-        content: _isLoading ? LinearProgressIndicator() : _buildCard());
+        content: _isLoading ? LinearProgressIndicator() : _buildForm());
   }
 
-  Widget _trailingWidget() {
-    if (_isUsernameAvailable == null) {
-      return Container();
-    }
-    return _isUsernameAvailable
-        ? Icon(
-            Icons.check,
-            color: Colors.green,
-          )
-        : Icon(
-            Icons.clear,
-            color: Colors.red,
-          );
-  }
-
-  Widget _buildCard() {
-    return Card(
+  Widget _buildForm() {
+    return Material(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Row(
             children: <Widget>[
               Flexible(
-                child: Form(
+                child: AvailabilityWidget(
                   key: _usernameKey,
-                  child: TextFormField(
-                    autofocus: true,
-                    controller: _usernameController,
-                    validator: (username) {
-                      if (username == null || username == "") {
-                        return "Username can't be empty";
-                      }
-                      return null;
-                    },
-                  ),
+                  validator: (name) {
+                    if (name == null || name == "") {
+                      return "Username can't be empty";
+                    }
+                  },
+                  decoration: InputDecoration(hintText: "Username"),
+                  initialValue: widget.currentName,
+                  onSaved: (username) {
+                    _username = username;
+                  },
+                  isAvailable: (username) {
+                    return widget.usersBloc.usernameIsAvailable(username);
+                  },
                 ),
               ),
-              _trailingWidget()
             ],
           )
         ],

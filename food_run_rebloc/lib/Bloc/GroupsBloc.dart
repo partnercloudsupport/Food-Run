@@ -10,6 +10,7 @@ class GroupsBloc {
   Stream<List<Group>> _groups = Firestore.instance
       .collection(groupsCollectionRefrence)
       .snapshots()
+      .take(20)
       .asyncMap((groupsSnap) {
     print("Loaded the groups properly");
     return groupsSnap.documents
@@ -25,6 +26,9 @@ class GroupsBloc {
   }
 
   Stream<List<Group>> getResults(String searchInput) {
+    if (searchInput == "" || searchInput == null) {
+      return Stream.empty();
+    }
     return _groups.map((groups) {
       return groups.where((Group group) {
         return group.name.toUpperCase().contains(searchInput.toUpperCase());
@@ -61,9 +65,10 @@ class GroupsBloc {
   Future addNewGroup(Group group) async {
     await Firestore.instance
         .collection(groupsCollectionRefrence)
-        .where("name", isEqualTo: group.name)
-        .getDocuments()
-        .catchError((error) => print(error));
+        .add(Group.toMap(group))
+        .then((_) {
+      print("added ${group.name} to groups");
+    }).catchError((error) => print(error));
     print("Successfully completed query for ${group.name}");
 
     //We don't need to check if username is taken cause we check before we add
@@ -169,6 +174,35 @@ class GroupsBloc {
         print("group name is available");
         return true;
       }
+    });
+  }
+
+  Future<List<String>> getResturantsIds(User signedInUser) async {
+    List<String> resturantIds = [];
+//    Firestore.instance.runTransaction((transaction) {
+//      signedInUser.groupIds.forEach((groupId) async {
+//        DocumentReference reference = Firestore.instance
+//            .collection(groupsCollectionRefrence)
+//            .document(groupId);
+//        DocumentSnapshot snapshot = await transaction.get(reference);
+//        Group group = Group.fromDocumentSnapshot(snapshot);
+//        group.resturantIds.forEach((resturantId) {
+//          resturantIds.add(resturantId);
+//        });
+//      });
+//    });
+    signedInUser.groupIds.forEach((groupId) async {
+      Firestore.instance
+          .collection(groupsCollectionRefrence)
+          .document(groupId)
+          .get()
+          .then((snapshot) {
+        Group group = Group.fromDocumentSnapshot(snapshot);
+        group.resturantIds.forEach((resturantId) {
+          resturantIds.add(resturantId);
+        });
+      });
+      return resturantIds;
     });
   }
 }

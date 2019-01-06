@@ -43,58 +43,65 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: widget.isEdit ? Text("Edit Group") : Text("Add Group"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: () async {
-              if (_groupsFormsKey.currentState.validate()) {
-                if (await _availabilityKey.currentState.isAvailable()) {
-                  _groupsFormsKey.currentState.save();
-                  if (widget.isEdit) {
-                    widget.groupsBloc.updateGroup(_group);
+        appBar: AppBar(
+          title: widget.isEdit ? Text("Edit Group") : Text("Add Group"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.save),
+              onPressed: () async {
+                if (_groupsFormsKey.currentState.validate()) {
+                  if (await _availabilityKey.currentState.isAvailable()) {
+                    _groupsFormsKey.currentState.save();
+                    _availabilityKey.currentState.save();
+                    if (widget.isEdit) {
+                      widget.groupsBloc.updateGroup(_group);
+                    } else {
+                      widget.groupsBloc.addNewGroup(_group);
+                    }
+                    Navigator.pop(context);
                   } else {
-                    widget.groupsBloc.addNewGroup(_group);
+                    Fluttertoast.showToast(msg: "Group name is already taken!");
                   }
-                } else {
-                  Fluttertoast.showToast(msg: "Group name is already taken!");
                 }
-              }
-            },
-          )
-        ],
-      ),
-      body: Form(
-          key: _groupsFormsKey,
-          child: Column(
-            children: <Widget>[
-              AvailabilityWidget(
-                key: _availabilityKey,
-                isAvailable: (input) {
-                  return widget.groupsBloc.isGroupnameAvailable(input);
-                },
-                initialValue: _group != null ? _group.name : null,
-                validator: (String groupName) {
-                  if (groupName == null || groupName == "") {
-                    return "Group name can't be empty";
-                  }
-                  return null;
-                },
-                onSaved: (groupName) => this._group.name = groupName,
-                decoration: InputDecoration(
-                    hintText: "Group name",
-                    contentPadding: EdgeInsets.all(16.0)),
-              ),
-              Text(
-                "Password members must know to join",
-              ),
-              _buildGroupPasswordFields(widget.isEdit),
-              Text("Password to allow members to become admin"),
-              _buildAdminPasswordFields(widget.isEdit),
-            ],
-          )),
-    );
+              },
+            )
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Form(
+              key: _groupsFormsKey,
+              child: Column(
+                children: <Widget>[
+                  AvailabilityWidget(
+                    key: _availabilityKey,
+                    isAvailable: (input) {
+                      return widget.groupsBloc.isGroupnameAvailable(input);
+                    },
+                    onSaved: (groupName) {
+                      setState(() {
+                        _group.name = groupName;
+                      });
+                    },
+                    initialValue: _group != null ? _group.name : null,
+                    validator: (String groupName) {
+                      if (groupName == null || groupName == "") {
+                        return "Group name can't be empty";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                        labelText: "Group name",
+                        contentPadding: EdgeInsets.all(16.0)),
+                  ),
+                  Text(
+                    "Password members must know to join",
+                  ),
+                  _buildGroupPasswordFields(widget.isEdit),
+                  Text("Password to allow members to become admin"),
+                  _buildAdminPasswordFields(widget.isEdit),
+                ],
+              )),
+        ));
   }
 
   Widget _buildGroupPasswordFields(bool isEdit) {
@@ -110,7 +117,8 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
           },
           onSaved: (groupPassword) => this._group.password = groupPassword,
           decoration: InputDecoration(
-              hintText: "Group password", contentPadding: EdgeInsets.all(16.0)),
+              labelText: "Group password",
+              contentPadding: EdgeInsets.all(16.0)),
         ),
         isEdit
             ? Container()
@@ -129,7 +137,7 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                 onSaved: (groupPassword) =>
                     this._group.password = groupPassword,
                 decoration: InputDecoration(
-                    hintText: "Confirm group password",
+                    labelText: "Confirm group password",
                     contentPadding: EdgeInsets.all(16.0)),
               )
       ],
@@ -149,7 +157,8 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
           },
           onSaved: (adminPassword) => this._group.adminPassword = adminPassword,
           decoration: InputDecoration(
-              hintText: "Admin Password", contentPadding: EdgeInsets.all(16.0)),
+              labelText: "Admin Password",
+              contentPadding: EdgeInsets.all(16.0)),
         ),
         isEdit
             ? Container()
@@ -168,7 +177,7 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                 onSaved: (confirmAdminPassword) =>
                     this._group.adminPassword = confirmAdminPassword,
                 decoration: InputDecoration(
-                    hintText: "Confirm admin password",
+                    labelText: "Confirm admin password",
                     contentPadding: EdgeInsets.all(16.0)),
               )
       ],

@@ -45,6 +45,8 @@ class OrdersListScreen extends StatelessWidget {
                     user: user, resturant: resturant);
                 if (userHasOrder) {
                   await usersBloc.userVolunteerForResturant(resturant);
+                  resturantsAndOrdersBloc.updateResturantsVolunteers(
+                      resturant, usersBloc.signedInUser);
                   resturantsAndOrdersBloc.updateOrdersForGroup(
                       resturant, usersBloc.signedInUser);
                 } else {
@@ -65,7 +67,7 @@ class OrdersListScreen extends StatelessWidget {
                       .map((order) => OrderListItem(
                           order: order,
                           isVolunteer: _isUserVolunteerForResturant(
-                              resturant, order.user),
+                              resturant, order.userAttributes["userId"]),
                           onTap: () {
                             if (Order.canAddEdit(order, user, group)) {
                               _goToAddEditOrder(
@@ -80,11 +82,12 @@ class OrdersListScreen extends StatelessWidget {
                             }
                           },
                           onLongPress: () {
-                            if (group.canRemoveOrders) {
-                              _onOrderListItemLongPress(order, resturant);
+                            if (Order.canRemove(order, user, group)) {
+                              _onDeleteOrder(order, resturant);
                             } else {
                               Fluttertoast.showToast(
-                                  msg: "Must be admin to remove orders");
+                                  msg:
+                                      "Must be admin to remove other people's orders");
                             }
                           }))
                       .toList(),
@@ -118,24 +121,35 @@ class OrdersListScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => AddEditOrderScreen(
-              user: user,
-              isEdit: isEdit,
-              resturant: resturant,
-              existingOrder: order,
-              onAdd: resturantsAndOrdersBloc.addOrderToFirestore,
-              onEdit: resturantsAndOrdersBloc.updateOrderToFirestore,
-              onDelete: resturantsAndOrdersBloc.deleteOrderToFirestore),
+                user: user,
+                isEdit: isEdit,
+                resturant: resturant,
+                existingOrder: order,
+                onAdd: (Order order, Resturant resturant) {
+                  resturantsAndOrdersBloc
+                      .addOrderToFirestore(
+                          order, resturant, usersBloc.signedInUser)
+                      .then((order) {
+                    usersBloc.addOrderToUser(order.id, order.resturantId);
+                  }).catchError((error) => print(error));
+                },
+                onEdit: resturantsAndOrdersBloc.updateOrderToFirestore,
+                onDelete: (Order order, Resturant resturant) {
+                  _onDeleteOrder(order, resturant);
+                },
+              ),
         ));
   }
 
-  _onOrderListItemLongPress(Order order, Resturant fromResturant) {
+  _onDeleteOrder(Order order, Resturant fromResturant) {
     resturantsAndOrdersBloc.deleteOrderToFirestore(order, fromResturant);
+    usersBloc.removeOrdersFromUser(order.id, order.resturantId);
   }
 
-  bool _isUserVolunteerForResturant(Resturant resturant, User user) {
+  bool _isUserVolunteerForResturant(Resturant resturant, String userId) {
     bool isVolunteer = false;
-    user.volunteeredResturants.forEach((groupId) {
-      if (groupId == resturant.id) {
+    resturant.volunteers.forEach((volunteerId) {
+      if (volunteerId == userId) {
         isVolunteer = true;
       }
     });

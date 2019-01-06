@@ -37,78 +37,80 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: widget.isEdit ? Text("Edit Order") : Text("Add Order"),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.save),
-            onPressed: () {
-              if (_globalKey.currentState.validate()) {
-                //submit
-                _globalKey.currentState.save();
-                if (widget.isEdit) {
-                  if (_didOrderChange(widget.existingOrder, _order)) {
-                    widget.onEdit(_order, widget.resturant);
-                  }
-                } else {
-                  _order.user = widget.user;
-                  widget.onAdd(_order, widget.resturant);
-                  sendMessage();
-                }
-                Navigator.pop(context);
-              }
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () {
-              widget.onDelete(_order, widget.resturant);
-              Navigator.pop(
-                context,
-              );
-            },
-          )
-        ],
-      ),
-      body: Form(
-        key: _globalKey,
-        child: ListView(
-          children: <Widget>[
-            TextFormField(
-              initialValue: _order.order,
-              validator: (order) {
-                if (order == null || order == " ") {
-                  return "Order can't be empty";
-                }
-              },
-              onSaved: (order) => _order.order = order,
-              decoration: InputDecoration(
-                  hintText: "What's your order?",
-                  contentPadding: EdgeInsets.all(16.0)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                "Selected Time: ${_order.timeOfDay.format(context)}",
-              ),
-            ),
-            RaisedButton(
-              child: Text("Select time"),
+        appBar: AppBar(
+          title: widget.isEdit ? Text("Edit Order") : Text("Add Order"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.save),
               onPressed: () {
-                showTimePicker(context: context, initialTime: TimeOfDay.now())
-                    .then((timeOfDay) {
-                  setState(() {
-                    _order.timeOfDay = timeOfDay;
-                    print(
-                        "timeofday selected is ${_order.timeOfDay.toString()}");
-                  });
-                });
+                if (_globalKey.currentState.validate()) {
+                  //submit
+                  _globalKey.currentState.save();
+                  if (widget.isEdit) {
+                    if (_didOrderChange(widget.existingOrder, _order)) {
+                      widget.onEdit(_order, widget.resturant);
+                    }
+                  } else {
+                    _order.userAttributes["userId"] = widget.user.id;
+                    widget.onAdd(_order, widget.resturant);
+                    sendMessage();
+                  }
+                  Navigator.pop(context);
+                }
               },
             ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                widget.onDelete(_order, widget.resturant);
+                Navigator.pop(
+                  context,
+                );
+              },
+            )
           ],
         ),
-      ),
-    );
+        body: SingleChildScrollView(
+          child: Form(
+            key: _globalKey,
+            child: ListView(
+              children: <Widget>[
+                TextFormField(
+                  initialValue: _order.order,
+                  validator: (order) {
+                    if (order == null || order == " ") {
+                      return "Order can't be empty";
+                    }
+                  },
+                  onSaved: (order) => _order.order = order,
+                  decoration: InputDecoration(
+                      labelText: "What's your order?",
+                      contentPadding: EdgeInsets.all(16.0)),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    "Selected Time: ${_order.timeOfDay.format(context)}",
+                  ),
+                ),
+                RaisedButton(
+                  child: Text("Select time"),
+                  onPressed: () {
+                    showTimePicker(
+                            context: context, initialTime: TimeOfDay.now())
+                        .then((timeOfDay) {
+                      setState(() {
+                        _order.timeOfDay = timeOfDay;
+                        print(
+                            "timeofday selected is ${_order.timeOfDay.toString()}");
+                      });
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 
   bool _didOrderChange(Order oldOrder, Order newOrder) {

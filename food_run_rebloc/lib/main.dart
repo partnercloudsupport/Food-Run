@@ -83,7 +83,6 @@ class ListPageState extends State<ListPage> {
     if (loginState == LoginState.loading) {
       return _buildLoadingScreen();
     } else if (loginState == LoginState.signedIn) {
-      print("Using groupsBloc in main");
       return GroupsListScreen(
         usersBloc: _usersBloc,
         groupsBloc: GroupsBloc(user: _usersBloc.signedInUser),
@@ -92,6 +91,8 @@ class ListPageState extends State<ListPage> {
       return HomeScreen(
           usersBloc: _usersBloc,
           sharedPreferencesBloc: widget.sharedPreferencesBloc);
+    } else {
+      return Text("Shouldnt happen");
     }
   }
 

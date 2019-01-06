@@ -55,7 +55,9 @@ class AdminSettingsScreenState extends State<AdminSettingsScreen> {
         title: Text("Admin Settings"),
       ),
       body: usersBloc.signedInUser.isAdmin(group)
-          ? _buildAdminSettings()
+          ? SingleChildScrollView(
+              child: _buildAdminSettings(),
+            )
           : _buildBecomeAdmin(context, group),
     );
   }

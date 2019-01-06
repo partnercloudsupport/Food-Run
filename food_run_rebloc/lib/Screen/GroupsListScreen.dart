@@ -47,7 +47,8 @@ class GroupsListScreenState extends State<GroupsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: FoodRunDrawer(SharedPreferencesBloc.getInstance(), usersBloc),
+      drawer: FoodRunDrawer(
+          SharedPreferencesBloc.getInstance(), usersBloc, groupsBloc),
       appBar: AppBar(
         title: Text("Your Groups"),
         actions: <Widget>[
