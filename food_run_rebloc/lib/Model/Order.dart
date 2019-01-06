@@ -117,4 +117,9 @@ class Order {
       "userName": documentSnap["userName"]
     };
   }
+
+  //empty if user didn't input
+  static bool isEmpty(Order order) {
+    return order.order == "";
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
+import 'package:food_run_rebloc/Widgets/WillPopForm.dart';
 
 class AddEditOrderScreen extends StatefulWidget {
   final bool isEdit;
@@ -29,9 +30,17 @@ class AddEditOrderScreen extends StatefulWidget {
 class AddEditOrderScreenState extends State<AddEditOrderScreen> {
   Order _order;
   var _globalKey = GlobalKey<FormState>();
+  TextEditingController _orderController;
+  Order _existingOrder;
 
   AddEditOrderScreenState(bool isEdit, Order existingOrder) {
     _order = isEdit ? Order.copyWith(existingOrder) : new Order();
+    if (isEdit) {
+      _orderController = TextEditingController(text: existingOrder.order);
+      _existingOrder = existingOrder;
+    } else {
+      _orderController = TextEditingController();
+    }
   }
 
   @override
@@ -70,46 +79,9 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
             )
           ],
         ),
-        body: SingleChildScrollView(
-          child: Form(
-            key: _globalKey,
-            child: ListView(
-              children: <Widget>[
-                TextFormField(
-                  initialValue: _order.order,
-                  validator: (order) {
-                    if (order == null || order == " ") {
-                      return "Order can't be empty";
-                    }
-                  },
-                  onSaved: (order) => _order.order = order,
-                  decoration: InputDecoration(
-                      labelText: "What's your order?",
-                      contentPadding: EdgeInsets.all(16.0)),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    "Selected Time: ${_order.timeOfDay.format(context)}",
-                  ),
-                ),
-                RaisedButton(
-                  child: Text("Select time"),
-                  onPressed: () {
-                    showTimePicker(
-                            context: context, initialTime: TimeOfDay.now())
-                        .then((timeOfDay) {
-                      setState(() {
-                        _order.timeOfDay = timeOfDay;
-                        print(
-                            "timeofday selected is ${_order.timeOfDay.toString()}");
-                      });
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
+        body: WillPopForm(
+          child: _buildForm(),
+          didDataChange: _didDataChange,
         ));
   }
 
@@ -119,5 +91,70 @@ class AddEditOrderScreenState extends State<AddEditOrderScreen> {
 
   void sendMessage() {
     //_firebaseMessaging.subscribeToTopic(topic);
+  }
+
+  Widget _buildForm() {
+    return SingleChildScrollView(
+      child: Form(
+        key: _globalKey,
+        child: Column(
+          children: <Widget>[
+            TextFormField(
+              controller: _orderController,
+              validator: (order) {
+                if (order == null || order == " ") {
+                  return "Order can't be empty";
+                }
+              },
+              onSaved: (order) {
+                setState(() {
+                  _order.order = order;
+                });
+              },
+              decoration: InputDecoration(
+                  labelText: "What's your order?",
+                  contentPadding: EdgeInsets.all(16.0)),
+            ),
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "Selected Time: ${_order.timeOfDay.format(context)}",
+              ),
+            ),
+            RaisedButton(
+              child: Text("Select time"),
+              onPressed: () {
+                showTimePicker(context: context, initialTime: TimeOfDay.now())
+                    .then((timeOfDay) {
+                  setState(() {
+                    _order.timeOfDay = timeOfDay;
+                    print(
+                        "timeofday selected is ${_order.timeOfDay.toString()}");
+                  });
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _didDataChange() {
+    Order currentFieldsOrder = _getOrderUsingControllers();
+    if (widget.isEdit) {
+      return !orderFieldsAreEqual(currentFieldsOrder, _existingOrder);
+    }
+    return !Order.isEmpty(currentFieldsOrder);
+  }
+
+  Order _getOrderUsingControllers() {
+    return Order(
+        order: _orderController.text.toString(), timeOfDay: _order.timeOfDay);
+  }
+
+  bool orderFieldsAreEqual(Order currentFieldsOrder, Order order) {
+    return currentFieldsOrder.order == order.order &&
+        currentFieldsOrder.timeOfDay == order.timeOfDay;
   }
 }

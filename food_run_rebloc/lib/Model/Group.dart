@@ -80,4 +80,10 @@ class Group {
         canAddResturants: group.canAddResturants,
         canRemoveResturants: group.canRemoveResturants);
   }
+
+  static bool isEmpty(Group group) {
+    return group.name == "" &&
+        group.password == "" &&
+        group.adminPassword == "";
+  }
 }

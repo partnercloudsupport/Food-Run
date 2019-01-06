@@ -105,7 +105,7 @@ class GroupsBloc {
   }
 
   Stream<List<Group>> getUsersGroups(User signedInUser) {
-    return _getUsersGroups(signedInUser.groupIds);
+    return _getUsersGroups(signedInUser?.groupIds);
   }
 
   void addUserToGroup(User user, Group group) {
@@ -161,10 +161,16 @@ class GroupsBloc {
         .map((docSnap) => List.from(docSnap["memberIds"]));
   }
 
-  Future<bool> isGroupnameAvailable(String name) async {
+  Future<bool> isGroupnameAvailable(
+      {String groupName, String existingName}) async {
+    if (existingName != null) {
+      if (existingName == groupName) {
+        return true;
+      }
+    }
     return Firestore.instance
         .collection(groupsCollectionRefrence)
-        .where("upperName", isEqualTo: name.toUpperCase().toString())
+        .where("upperName", isEqualTo: groupName.toUpperCase().toString())
         .getDocuments()
         .then((querySnapshot) {
       if (querySnapshot.documents.length > 0) {

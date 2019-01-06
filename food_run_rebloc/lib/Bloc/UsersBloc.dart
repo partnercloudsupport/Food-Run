@@ -150,6 +150,7 @@ class UsersBloc {
         .listen((user) {
       signedInUser = user;
       _userStream.add(signedInUser);
+      print(signedInUser.toString() + " added to stream");
     });
     return signedInUser;
   }

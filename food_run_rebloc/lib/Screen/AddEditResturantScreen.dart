@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
+import 'package:food_run_rebloc/Widgets/WillPopForm.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AddEditResturantScreen extends StatefulWidget {
@@ -71,9 +73,20 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
   TextEditingController _telephoneController;
   TextEditingController _addressController;
   TextEditingController _websiteController;
+  Resturant existingResturant;
+  bool isEdit;
+  Resturant _existingResturant;
 
-  AddEditResturantScreenState(bool isEdit, Resturant existingResturant) {
+  AddEditResturantScreenState(this.isEdit, this.existingResturant);
+
+  @override
+  void initState() {
+    super.initState();
+    _resturant = widget.isEdit
+        ? Resturant.copyWith(widget.existingResturant)
+        : new Resturant();
     if (isEdit) {
+      _existingResturant = widget.existingResturant;
       _nameController = new TextEditingController(text: existingResturant.name);
       _telephoneController =
           new TextEditingController(text: existingResturant.telephoneNumber);
@@ -91,60 +104,47 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _resturant = widget.isEdit
-        ? Resturant.copyWith(widget.existingResturant)
-        : new Resturant();
     return new Scaffold(
-      appBar: new AppBar(
-        title: widget.isEdit
-            ? new Text("Edit Resturant")
-            : new Text("Add Resturant"),
-        actions: <Widget>[
-          new IconButton(
-              icon: new Icon(Icons.save),
-              onPressed: () {
-                if (_resturantFormsKey.currentState.validate()) {
-//                  Resturant newEditedChoice = new Resturant(
-//                    id: widget.groupDocId,
-//                    numberOfOrders: 0,
-//                    name:
-//                        _resturantFormsKey.currentState.nameKey.currentState.value,
-//                    telephoneNumber: _resturantFormsKey
-//                        .currentState.numberKey.currentState.value,
-//                    address: _resturantFormsKey
-//                        .currentState.addressKey.currentState.value,
-//                    website: _resturantFormsKey
-//                        .currentState.websiteKey.currentState.value,
-//                  );
-                  _resturantFormsKey.currentState.save();
-                  if (widget.isEdit) {
-                    if (_didResturantChange(
-                        widget.existingResturant, _resturant))
-                      widget.onEdit(_resturant);
-                  } else {
-                    widget.onAdd(_resturant);
-                  }
-                  Navigator.pop(context);
-                }
-              }),
-          widget.isEdit
-              ? new IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
+        appBar: new AppBar(
+          title: widget.isEdit
+              ? new Text("Edit Resturant")
+              : new Text("Add Resturant"),
+          actions: <Widget>[
+            new IconButton(
+                icon: new Icon(Icons.save),
+                onPressed: () {
+                  if (_resturantFormsKey.currentState.validate()) {
+                    _resturantFormsKey.currentState.save();
                     if (widget.isEdit) {
-                      widget.onDelete(widget.existingResturant);
+                      if (_didResturantChange(
+                          widget.existingResturant, _resturant))
+                        widget.onEdit(_resturant);
+                    } else {
+                      widget.onAdd(_resturant);
                     }
                     Navigator.pop(context);
-                  })
-              : Container(),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: new Column(
-          children: <Widget>[_buildResturantForms(), _buildNavigationRow()],
+                  }
+                }),
+            widget.isEdit
+                ? new IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      if (widget.isEdit) {
+                        widget.onDelete(widget.existingResturant);
+                      }
+                      Navigator.pop(context);
+                    })
+                : Container(),
+          ],
         ),
-      ),
-    );
+        body: WillPopForm(
+          child: SingleChildScrollView(
+            child: new Column(
+              children: <Widget>[_buildResturantForms(), _buildNavigationRow()],
+            ),
+          ),
+          didDataChange: _didDataChange,
+        ));
   }
 
   Row _buildNavigationRow() {
@@ -157,6 +157,8 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
           onPressed: () {
             if (_isTextValid(_addressController.text.toString())) {
               widget._goToMapsAddress(_addressController.text.toString());
+            } else {
+              _showToast("Make sure you entered a valid address");
             }
           },
           iconSize: 48.0,
@@ -166,6 +168,8 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
           onPressed: () {
             if (_isTextValid(_websiteController.text.toString())) {
               widget._goToWebsite(_websiteController.text.toString());
+            } else {
+              _showToast("Make sure you entered a valid website");
             }
           },
           iconSize: 48.0,
@@ -175,6 +179,8 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
           onPressed: () {
             if (_isTextValid(_telephoneController.text.toString())) {
               widget._dialNumber(_telephoneController.text.toString());
+            } else {
+              _showToast("Make sure you entered a valid telephone number");
             }
           },
           iconSize: 48.0,
@@ -193,7 +199,9 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
               controller: _nameController,
               validator: (input) => _generalValidator(input),
               onSaved: (name) {
-                _resturant.name = name;
+                setState(() {
+                  _resturant.name = name;
+                });
               },
               decoration: InputDecoration(
                   labelText: "Resturant Name",
@@ -201,23 +209,34 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
             ),
             TextFormField(
               controller: _telephoneController,
-              onSaved: (telephoneNumber) =>
-                  _resturant.telephoneNumber = telephoneNumber,
+              onSaved: (telephoneNumber) {
+                setState(() {
+                  _resturant.telephoneNumber = telephoneNumber;
+                });
+              },
               decoration: InputDecoration(
                   labelText: "Telephone Number",
                   contentPadding: EdgeInsets.all(16.0)),
             ),
             TextFormField(
               controller: _addressController,
-              onSaved: (address) => _resturant.address = address,
+              onSaved: (address) {
+                setState(() {
+                  _resturant.address = address;
+                });
+              },
               decoration: InputDecoration(
                   labelText: "Address", contentPadding: EdgeInsets.all(16.0)),
             ),
             TextFormField(
               controller: _websiteController,
-              onSaved: (website) => _resturant.website = website,
               decoration: InputDecoration(
                   labelText: "Website", contentPadding: EdgeInsets.all(16.0)),
+              onSaved: (website) {
+                setState(() {
+                  _resturant.website = website;
+                });
+              },
             ),
           ],
         ),
@@ -240,34 +259,34 @@ class AddEditResturantScreenState extends State<AddEditResturantScreen> {
     return existingResturant != resturant;
   }
 
-//  _buildMenuButton(){
-//    new RaisedButton(
-//        child: new Text("Menu"),
-//        onPressed: () {
-//          if (widget.resturant == null) {
-//            print("widget choice is null");
-//          }
-//          MaterialPageRoute route;
-//          if (widget.resturant.menuCatagories != [] ||
-//              widget.resturant.menuCatagories.length != 0) {
-//            print("Going to editmenu");
-//            route = new MaterialPageRoute(
-//                builder: (context) => new EditMenu(
-//                  resturant: widget.resturant,
-//                  resturants: widget.resturant.menuCatagories,
-//                ));
-//          } else {
-////                    route = new MaterialPageRoute(
-////                        builder: (context) => new AddMenu(
-////                              choice: widget.choice,
-////                              catagories: widget.choice.menuCatagories,
-////                            ));
-//          }
-//          Navigator.of(context).push(route).then((catagories) {
-//            if (catagories is List<ResturantCatagory>) {
-//              return this.resturants = catagories;
-//            }
-//          });
-//        }),
-//  }
+  void _showToast(String message) {
+    Fluttertoast.showToast(msg: message);
+  }
+
+  bool _didDataChange() {
+    Resturant currentFieldsResturant = _getResturantUsingControllers();
+    if (widget.isEdit) {
+      return !resturantFieldsAreEqual(
+          currentFieldsResturant, _existingResturant);
+    }
+    return !Resturant.isEmpty(currentFieldsResturant);
+  }
+
+  Resturant _getResturantUsingControllers() {
+    return Resturant(
+      name: _nameController.text.toString(),
+      address: _addressController.text.toString(),
+      telephoneNumber: _telephoneController.text.toString(),
+      website: _websiteController.text.toString(),
+    );
+  }
+
+  bool resturantFieldsAreEqual(
+      Resturant currentFieldsResturant, Resturant existingResturant) {
+    return currentFieldsResturant.name == existingResturant.name &&
+        currentFieldsResturant.address == existingResturant.address &&
+        currentFieldsResturant.telephoneNumber ==
+            existingResturant.telephoneNumber &&
+        currentFieldsResturant.website == existingResturant.website;
+  }
 }

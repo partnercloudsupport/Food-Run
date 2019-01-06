@@ -138,4 +138,8 @@ class AvailabilityWidgetState extends State<AvailabilityWidget> {
   bool validate() {
     return _usernameKey.currentState.validate();
   }
+
+  String name() {
+    return _usernameController.text.toString();
+  }
 }

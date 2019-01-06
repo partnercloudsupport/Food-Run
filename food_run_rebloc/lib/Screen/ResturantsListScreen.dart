@@ -58,6 +58,7 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
   void initState() {
     super.initState();
     _user = widget.user;
+    widget.resturantsAndOrdersBloc.setGroup(widget.group);
     widget.usersBloc.userStream.listen((user) {
       if (mounted) {
         setState(() {
@@ -71,6 +72,7 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("Looking at resturants for ${widget.group.name}");
     return new Scaffold(
       appBar: AppBar(
         title: Text("Resturants for ${widget.group.name}"),

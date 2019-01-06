@@ -62,7 +62,7 @@ class AdminDialog extends StatelessWidget {
             key: _adminPasswordKey,
             child: TextFormField(
               controller: _adminController,
-              decoration: InputDecoration(hintText: "Admin Password"),
+              decoration: InputDecoration(labelText: "Admin Password"),
               validator: (attempt) {
                 if (attempt == null || attempt == "") {
                   return "Can't be empty";

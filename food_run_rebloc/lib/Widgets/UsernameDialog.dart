@@ -88,7 +88,7 @@ class UsernameDialogState extends State<UsernameDialog> {
                       return "Username can't be empty";
                     }
                   },
-                  decoration: InputDecoration(hintText: "Username"),
+                  decoration: InputDecoration(labelText: "Username"),
                   initialValue: widget.currentName,
                   onSaved: (username) {
                     _username = username;

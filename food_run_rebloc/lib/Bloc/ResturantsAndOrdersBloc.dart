@@ -322,4 +322,8 @@ class ResturantsAndOrdersBloc {
       });
     });
   }
+
+  void setGroup(Group group) {
+    this.group = group;
+  }
 }

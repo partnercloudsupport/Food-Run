@@ -98,7 +98,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
               return null;
             },
             decoration: InputDecoration(
-                hintText: "Email Address",
+                labelText: "Email Address",
                 contentPadding: EdgeInsets.all(16.0)),
             onSaved: (email) => _user.email = email,
           ),
@@ -106,7 +106,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
               ? Container()
               : AvailabilityWidget(
                   key: _availabilityKey,
-                  decoration: InputDecoration(hintText: "Username"),
+                  decoration: InputDecoration(labelText: "Username"),
                   validator: (input) {
                     if (input != null || input == "") {
                       return "Can't be empty";
@@ -125,7 +125,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
             key: Key("Password"),
             controller: _passwordController,
             decoration: InputDecoration(
-                hintText: "Password", contentPadding: EdgeInsets.all(16.0)),
+                labelText: "Password", contentPadding: EdgeInsets.all(16.0)),
             validator: (password) {
               if (password == "" || password == null) {
                 return "Enter valid password";
@@ -141,6 +141,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
               ? new Container()
               : TextFormField(
                   key: Key("Confirm Password"),
+                  obscureText: true,
                   validator: (confirmPassword) {
                     if (confirmPassword !=
                         _passwordController.text.toString()) {
@@ -155,7 +156,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
                     return null;
                   },
                   decoration: InputDecoration(
-                      hintText: "Confirm Password",
+                      labelText: "Confirm Password",
                       contentPadding: EdgeInsets.all(16.0)),
                 ),
         ],

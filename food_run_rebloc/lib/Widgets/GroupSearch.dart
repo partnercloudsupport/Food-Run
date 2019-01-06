@@ -43,7 +43,7 @@ class GroupSearch extends SearchDelegate<Group> {
       future: groupsBloc.getResults(query).last,
       builder: (context, AsyncSnapshot<List<Group>> groupsSnapshot) {
         if (groupsSnapshot.hasData) {
-          ListView(
+          return ListView(
             children: groupsSnapshot.data
                 .map((group) => GroupListItem(
                     group: group,
@@ -56,6 +56,7 @@ class GroupSearch extends SearchDelegate<Group> {
                 .toList(),
           );
         }
+        return Container();
       },
     );
   }

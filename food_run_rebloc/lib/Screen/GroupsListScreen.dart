@@ -64,7 +64,16 @@ class GroupsListScreenState extends State<GroupsListScreen> {
               })
         ],
       ),
-      body: user != null ? _buildGroupsList() : Container(),
+      //body: user != null ? _buildGroupsList() : Container(),
+      body: RefreshIndicator(
+        onRefresh: () {
+          setState(() {
+            user = usersBloc.signedInUser;
+          });
+          return Future.value(true);
+        },
+        child: _buildGroupsList(),
+      ),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () {

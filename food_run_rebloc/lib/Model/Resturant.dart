@@ -78,4 +78,11 @@ class Resturant {
   static canRemove(User signedInUser, Group group) {
     return signedInUser.isAdmin(group) || group.canRemoveResturants;
   }
+
+  static bool isEmpty(Resturant resturant) {
+    return resturant.telephoneNumber == "" &&
+        resturant.name == "" &&
+        resturant.website == "" &&
+        resturant.address == "";
+  }
 }

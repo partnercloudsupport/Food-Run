@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:food_run_rebloc/Bloc/GroupsBloc.dart';
 import 'package:food_run_rebloc/Model/Group.dart';
 import 'package:food_run_rebloc/Widgets/AvailabilityWidget.dart';
+import 'package:food_run_rebloc/Widgets/WillPopForm.dart';
 
 class AddEditGroupScreen extends StatefulWidget {
   final GroupsBloc groupsBloc;
@@ -21,14 +22,16 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
   Group _group;
   TextEditingController _passwordController;
   TextEditingController _adminPasswordController;
-
   static final GlobalKey<FormState> _groupsFormsKey = GlobalKey<FormState>();
-
   static final GlobalKey<AvailabilityWidgetState> _availabilityKey =
       GlobalKey<AvailabilityWidgetState>();
+  Group _existingGroup;
 
   AddEditGroupScreenState(Group group) {
-    _group = group;
+    if (group != null) {
+      _existingGroup = group;
+      _group = Group.copyWith(group);
+    }
     if (group == null) {
       _group = new Group();
       _passwordController = new TextEditingController();
@@ -67,40 +70,9 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             )
           ],
         ),
-        body: SingleChildScrollView(
-          child: Form(
-              key: _groupsFormsKey,
-              child: Column(
-                children: <Widget>[
-                  AvailabilityWidget(
-                    key: _availabilityKey,
-                    isAvailable: (input) {
-                      return widget.groupsBloc.isGroupnameAvailable(input);
-                    },
-                    onSaved: (groupName) {
-                      setState(() {
-                        _group.name = groupName;
-                      });
-                    },
-                    initialValue: _group != null ? _group.name : null,
-                    validator: (String groupName) {
-                      if (groupName == null || groupName == "") {
-                        return "Group name can't be empty";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                        labelText: "Group name",
-                        contentPadding: EdgeInsets.all(16.0)),
-                  ),
-                  Text(
-                    "Password members must know to join",
-                  ),
-                  _buildGroupPasswordFields(widget.isEdit),
-                  Text("Password to allow members to become admin"),
-                  _buildAdminPasswordFields(widget.isEdit),
-                ],
-              )),
+        body: WillPopForm(
+          child: _buildForms(),
+          didDataChange: _didDataChange,
         ));
   }
 
@@ -115,7 +87,11 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             }
             return null;
           },
-          onSaved: (groupPassword) => this._group.password = groupPassword,
+          onSaved: (groupPassword) {
+            setState(() {
+              this._group.password = groupPassword;
+            });
+          },
           decoration: InputDecoration(
               labelText: "Group password",
               contentPadding: EdgeInsets.all(16.0)),
@@ -134,8 +110,12 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                   }
                   return null;
                 },
-                onSaved: (groupPassword) =>
-                    this._group.password = groupPassword,
+                onSaved: (groupPassword) {
+                  setState(() {
+                    this._group.password = groupPassword;
+                  });
+                },
+                obscureText: true,
                 decoration: InputDecoration(
                     labelText: "Confirm group password",
                     contentPadding: EdgeInsets.all(16.0)),
@@ -155,7 +135,11 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
             }
             return null;
           },
-          onSaved: (adminPassword) => this._group.adminPassword = adminPassword,
+          onSaved: (adminPassword) {
+            setState(() {
+              this._group.adminPassword = adminPassword;
+            });
+          },
           decoration: InputDecoration(
               labelText: "Admin Password",
               contentPadding: EdgeInsets.all(16.0)),
@@ -174,13 +158,77 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                   }
                   return null;
                 },
-                onSaved: (confirmAdminPassword) =>
-                    this._group.adminPassword = confirmAdminPassword,
+                onSaved: (confirmAdminPassword) {
+                  this._group.adminPassword = confirmAdminPassword;
+                },
+                obscureText: true,
                 decoration: InputDecoration(
                     labelText: "Confirm admin password",
                     contentPadding: EdgeInsets.all(16.0)),
               )
       ],
     );
+  }
+
+  Widget _buildForms() {
+    return SingleChildScrollView(
+      child: Form(
+          key: _groupsFormsKey,
+          child: Column(
+            children: <Widget>[
+              AvailabilityWidget(
+                key: _availabilityKey,
+                isAvailable: (input) {
+                  return widget.groupsBloc.isGroupnameAvailable(
+                      groupName: input,
+                      existingName: widget.existingGroup.name);
+                },
+                onSaved: (groupName) {
+                  setState(() {
+                    _group.name = groupName;
+                  });
+                },
+                initialValue: _group != null ? _group.name : null,
+                validator: (String groupName) {
+                  if (groupName == null || groupName == "") {
+                    return "Group name can't be empty";
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                    labelText: "Group name",
+                    contentPadding: EdgeInsets.all(16.0)),
+              ),
+              Text(
+                "Password members must know to join",
+              ),
+              _buildGroupPasswordFields(widget.isEdit),
+              Text("Password to allow members to become admin"),
+              _buildAdminPasswordFields(widget.isEdit),
+            ],
+          )),
+    );
+  }
+
+  bool _didDataChange() {
+    Group currentFieldsGroup = _getGroupUsingControllers();
+    if (widget.isEdit) {
+      return !groupFieldsAreEqual(currentFieldsGroup, _existingGroup);
+    }
+    return !Group.isEmpty(currentFieldsGroup);
+  }
+
+  _getGroupUsingControllers() {
+    return Group(
+      name: _availabilityKey.currentState.name(),
+      password: _passwordController.text.toString(),
+      adminPassword: _adminPasswordController.text.toString(),
+    );
+  }
+
+  bool groupFieldsAreEqual(Group currentGroup, Group existingGroup) {
+    return currentGroup.name == existingGroup.name &&
+        currentGroup.password == existingGroup.password &&
+        currentGroup.adminPassword == existingGroup.adminPassword;
   }
 }
