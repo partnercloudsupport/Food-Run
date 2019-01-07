@@ -55,7 +55,7 @@ class ListPageState extends State<ListPage> {
   @override
   void initState() {
     super.initState();
-    _usersBloc = UsersBloc.getInstance();
+    _usersBloc = UsersBloc();
     loginState = LoginState.loading;
     sharedPreferencesBloc.isLoggedInStream.listen((loginState) {
       print(loginState.toString());

@@ -12,6 +12,7 @@ import 'package:food_run_rebloc/Screen/AddEditResturantScreen.dart';
 import 'package:food_run_rebloc/Screen/AdminSettingsScreen.dart';
 import 'package:food_run_rebloc/Screen/GroupMembersScreen.dart';
 import 'package:food_run_rebloc/Screen/OrdersListScreen.dart';
+import 'package:food_run_rebloc/Widgets/EmptyList.dart';
 import 'package:food_run_rebloc/Widgets/ResturantListItem.dart';
 
 class ResturantsListScreen extends StatefulWidget {
@@ -110,6 +111,15 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
           builder: (BuildContext context,
               AsyncSnapshot<List<Resturant>> resturants) {
             if (resturants.hasData) {
+              if (resturants.data.length == 0) {
+                return EmptyList(
+                  messages: [
+                    "Find any new places around? Feel free to add them",
+                    "Add your favorites to the group",
+                    "Here's a perfect place to make recommendations"
+                  ],
+                );
+              }
               return ListView(
                 children: resturants.data
                     .map((resturant) => ResturantListItem(
@@ -127,7 +137,13 @@ class ResturantsListScreenState extends State<ResturantsListScreen> {
                     .toList(),
               );
             }
-            return Text("Add A Resturant");
+            return EmptyList(
+              messages: [
+                "Find any new places around? Feel free to add them",
+                "Add your favorites to the group",
+                "Here's a perfect place to make recommendations"
+              ],
+            );
           }),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),

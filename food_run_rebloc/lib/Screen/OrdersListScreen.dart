@@ -9,6 +9,7 @@ import 'package:food_run_rebloc/Model/Order.dart';
 import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditOrderScreen.dart';
+import 'package:food_run_rebloc/Widgets/EmptyList.dart';
 import 'package:food_run_rebloc/Widgets/OrderListItem.dart';
 
 class OrdersListScreen extends StatelessWidget {
@@ -93,15 +94,9 @@ class OrdersListScreen extends StatelessWidget {
                       .toList(),
                 );
               }
-              return SizedBox(
-                child: FlareActor(
-                  FlareData.runningMan.filename,
-                  animation: FlareData.runningMan.animation,
-                  fit: BoxFit.fitWidth,
-                ),
-              );
+              return _buildEmptyList();
             }
-            return Container();
+            return _buildEmptyList();
           }),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
@@ -154,5 +149,15 @@ class OrdersListScreen extends StatelessWidget {
       }
     });
     return isVolunteer;
+  }
+
+  Widget _buildEmptyList() {
+    return EmptyList(
+      messages: [
+        "Feeling hungry? Add your order",
+        "Get things started with an order",
+        "You are feeling hungry all of a sudden",
+      ],
+    );
   }
 }

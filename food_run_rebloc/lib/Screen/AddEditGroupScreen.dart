@@ -181,11 +181,12 @@ class AddEditGroupScreenState extends State<AddEditGroupScreen> {
                 isAvailable: (input) {
                   return widget.groupsBloc.isGroupnameAvailable(
                       groupName: input,
-                      existingName: widget.existingGroup.name);
+                      existingName:
+                          widget.isEdit ? widget.existingGroup.name : null);
                 },
                 onSaved: (groupName) {
                   setState(() {
-                    _group.name = groupName;
+                    _group.name = groupName.trimRight();
                   });
                 },
                 initialValue: _group != null ? _group.name : null,

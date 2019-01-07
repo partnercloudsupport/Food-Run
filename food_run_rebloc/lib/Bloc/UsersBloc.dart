@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 
+UsersBloc usersBloc = UsersBloc._internal();
+
 class UsersBloc {
   static final String usersCollectionRefrence = "Users";
   PublishSubject<User> _userStream = PublishSubject<User>();
@@ -18,15 +20,13 @@ class UsersBloc {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   User signedInUser;
-  static UsersBloc _instance;
-  UsersBloc._() {
+  String _signInUserId;
+  static UsersBloc _instance = UsersBloc._internal();
+  UsersBloc._internal() {
     _getUsers();
   }
 
-  static UsersBloc getInstance() {
-    if (_instance == null) {
-      return UsersBloc._();
-    }
+  factory UsersBloc() {
     return _instance;
   }
 
@@ -72,7 +72,7 @@ class UsersBloc {
         firebaseAuthData.message = "Must verify account before signing in!";
       } else {
         firebaseAuthData.message = "Welcome back ${firebaseUser.email}";
-        firebaseAuthData.user = await _getUser(firebaseUser.uid);
+        firebaseAuthData.user = await getUser(firebaseUser.uid);
       }
     }
     return firebaseAuthData;
@@ -93,15 +93,15 @@ class UsersBloc {
     print("signed in " + user.displayName);
   }
 
-  Future<User> _getUser(String uid) async {
-    return await Firestore.instance
-        .collection(usersCollectionRefrence)
-        .document(uid)
-        .get()
-        .then((docSnapshot) {
-      return User.fromDocument(docSnapshot);
-    }).catchError((error) => print(error));
-  }
+//  Future<User> _getUser(String uid) async {
+//    return await Firestore.instance
+//        .collection(usersCollectionRefrence)
+//        .document(uid)
+//        .get()
+//        .then((docSnapshot) {
+//      return User.fromDocument(docSnapshot);
+//    }).catchError((error) => print(error));
+//  }
 
   void _createUserInFirestore(User user, FirebaseUser firebaseUser) {
     user.id = firebaseUser.uid;
@@ -137,21 +137,24 @@ class UsersBloc {
   }
 
   Future<User> getUser(String id) async {
+    _signInUserId = id;
     DocumentSnapshot signinUserSnap = await Firestore.instance
         .collection(usersCollectionRefrence)
         .document(id)
         .get();
-    signedInUser = User.fromDocument(signinUserSnap);
-    Firestore.instance
-        .collection(usersCollectionRefrence)
-        .document(id)
-        .snapshots()
-        .asyncMap((doc) => User.fromDocument(doc))
-        .listen((user) {
-      signedInUser = user;
-      _userStream.add(signedInUser);
-      print(signedInUser.toString() + " added to stream");
-    });
+    if (signinUserSnap.data != null) {
+      signedInUser = User.fromDocument(signinUserSnap);
+      Firestore.instance
+          .collection(usersCollectionRefrence)
+          .document(id)
+          .snapshots()
+          .asyncMap((doc) => User.fromDocument(doc))
+          .listen((user) {
+        signedInUser = user;
+        _userStream.add(signedInUser);
+        print(signedInUser.toString() + " added to stream");
+      });
+    }
     return signedInUser;
   }
 
@@ -327,6 +330,10 @@ class UsersBloc {
       "activeOrders": signedInUser.activeOrders,
       "activeResturants": signedInUser.activeResturants
     });
+  }
+
+  void dispose() {
+    _userStream.close();
   }
 }
 

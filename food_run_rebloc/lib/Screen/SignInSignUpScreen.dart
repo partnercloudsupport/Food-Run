@@ -100,7 +100,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
             decoration: InputDecoration(
                 labelText: "Email Address",
                 contentPadding: EdgeInsets.all(16.0)),
-            onSaved: (email) => _user.email = email,
+            onSaved: (email) => _user.email = email.trim(),
           ),
           widget.isSignIn
               ? Container()
@@ -114,7 +114,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
                   },
                   onSaved: (name) {
                     setState(() {
-                      _user.name = name;
+                      _user.name = name.trim();
                     });
                   },
                   isAvailable: (name) {
@@ -124,6 +124,7 @@ class SignInSignUpScreenState extends State<SignInSignUpScreen> {
           TextFormField(
             key: Key("Password"),
             controller: _passwordController,
+            obscureText: widget.isSignIn ?? false,
             decoration: InputDecoration(
                 labelText: "Password", contentPadding: EdgeInsets.all(16.0)),
             validator: (password) {

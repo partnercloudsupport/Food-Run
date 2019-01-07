@@ -21,6 +21,7 @@ class JoinGroupDialog extends StatelessWidget {
         children: <Widget>[
           TextFormField(
             controller: _passwordController,
+            obscureText: true,
             decoration: InputDecoration(labelText: "Group Password"),
             validator: (attempt) {
               if (attempt == null || attempt == "") {

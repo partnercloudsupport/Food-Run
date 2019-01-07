@@ -8,6 +8,7 @@ import 'package:food_run_rebloc/Model/Resturant.dart';
 import 'package:food_run_rebloc/Model/User.dart';
 import 'package:food_run_rebloc/Screen/AddEditGroupScreen.dart';
 import 'package:food_run_rebloc/Screen/ResturantsListScreen.dart';
+import 'package:food_run_rebloc/Widgets/EmptyList.dart';
 import 'package:food_run_rebloc/Widgets/FoodRunDrawer.dart';
 import 'package:food_run_rebloc/Widgets/GroupListItem.dart';
 import 'package:food_run_rebloc/Widgets/GroupSearch.dart';
@@ -127,22 +128,12 @@ class GroupsListScreenState extends State<GroupsListScreen> {
   }
 
   Widget _displayEmptyGroupsList() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            Icons.clear,
-            size: 42.0,
-          ),
-          Text(
-            "Join or make a group",
-            style: TextStyle(fontSize: 32.0),
-          )
-        ],
-      ),
+    return EmptyList(
+      messages: [
+        "Create one for your study buddies",
+        "Looking empty there. Why not make one for your friends?",
+        "Make one to make those lunch breaks easy"
+      ],
     );
   }
 }
